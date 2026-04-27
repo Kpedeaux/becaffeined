@@ -111,7 +111,8 @@ export function showSplash(splash, levelNumber, totalLevels) {
     if (splash.photo) {
       const photo = document.createElement('img');
       photo.className = 'overlay__photo';
-      photo.src = splash.photo;
+      // Cache-bust splash photos for the same reason as drink SVGs
+      photo.src = splash.photo + (splash.photo.includes('?') ? '&' : '?') + 'v=15';
       photo.alt = '';
       photo.loading = 'eager';
       // Optional crop control — defaults to center. Set photoPosition: 'top'

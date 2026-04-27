@@ -12,13 +12,18 @@
 
 import { TYPES } from './board.js';
 
+// Bumped whenever we change a drink SVG. The query string is appended to
+// every art URL so browsers see a "different" file and fetch the new one
+// instead of serving the old version from disk cache. Without this, the
+// 1-year immutable cache header on /assets/* keeps stale art around.
+const ART_VERSION = '15';
 const ART_PATHS = {
-  'iced-cr':     'assets/svg/drink-iced-cr.svg',
-  'streetcar':   'assets/svg/drink-streetcar.svg',
-  'cappuccino':  'assets/svg/drink-cappuccino.svg',
-  'bayou-beast': 'assets/svg/drink-bayou-beast.svg',
-  'iced-mocha':  'assets/svg/drink-iced-mocha.svg',
-  'coffee-bag':  'assets/svg/drink-coffee-bag.svg',
+  'iced-cr':     `assets/svg/drink-iced-cr.svg?v=${ART_VERSION}`,
+  'streetcar':   `assets/svg/drink-streetcar.svg?v=${ART_VERSION}`,
+  'cappuccino':  `assets/svg/drink-cappuccino.svg?v=${ART_VERSION}`,
+  'bayou-beast': `assets/svg/drink-bayou-beast.svg?v=${ART_VERSION}`,
+  'iced-mocha':  `assets/svg/drink-iced-mocha.svg?v=${ART_VERSION}`,
+  'coffee-bag':  `assets/svg/drink-coffee-bag.svg?v=${ART_VERSION}`,
 };
 
 // Human-readable labels for screen readers. Without this, alt text reads

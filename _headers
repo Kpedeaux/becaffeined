@@ -11,8 +11,22 @@
 # so a fresh hash is implicit). HTML/JS/CSS get a shorter cache so deploys
 # are visible quickly.
 
-/assets/*
+# Long-lived cache for fonts and brand logos — these rarely change.
+/assets/fonts/*
   Cache-Control: public, max-age=31536000, immutable
+
+/assets/img/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Drink art and splash photos change as we iterate. 1 hour browser cache
+# with revalidate so a deploy is visible quickly without a hard refresh.
+# We additionally version-stamp these URLs from JS to bypass cache on
+# any user already holding a stale copy.
+/assets/svg/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/assets/splash/*
+  Cache-Control: public, max-age=3600, must-revalidate
 
 /css/*
   Cache-Control: public, max-age=300, must-revalidate
