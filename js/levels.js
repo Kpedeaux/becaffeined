@@ -34,6 +34,7 @@ export const LEVELS = [
       title: 'Antique Roasted.',
       subtitle: 'Since 1910.',
       photo: 'assets/splash/coffee-roaster.jpg',
+      photoPosition: 'top',
       body:
         'Every batch of Coast Roast Coffee is roasted on 1910s Royal No. 6 ' +
         'drum roasters. These machines run slow and steady, the way coffee ' +

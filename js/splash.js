@@ -114,6 +114,12 @@ export function showSplash(splash, levelNumber, totalLevels) {
       photo.src = splash.photo;
       photo.alt = '';
       photo.loading = 'eager';
+      // Optional crop control — defaults to center. Set photoPosition: 'top'
+      // (or any valid object-position value) when the subject lives in the
+      // upper portion of the source photo and center-crop is hiding it.
+      if (splash.photoPosition) {
+        photo.style.objectPosition = splash.photoPosition;
+      }
       inner.appendChild(photo);
     }
 
