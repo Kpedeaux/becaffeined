@@ -27,17 +27,24 @@
         font-family="Helvetica, Arial, sans-serif" font-size="5.5" font-weight="700"
         fill="#f5efe2" letter-spacing="1.2">COFFEE SHOP</text>
 
-  <!-- Black lid: bottom rim band -->
-  <path d="M 56 70 L 144 70 L 142 82 Q 142 84 140 84 L 60 84 Q 58 84 58 82 Z"
-        fill="#0f0f0f" stroke="#1d1d1d" stroke-width="2.4" stroke-linejoin="round"/>
+  <!-- Black lid: flat-top profile.
+       Outer skirt that wraps over the cup rim, with a flat top surface.
+       Built as: outer skirt + top deck + inner sip-hole. -->
 
-  <!-- Black lid: domed top -->
-  <path d="M 60 70 Q 60 36 100 34 Q 140 36 140 70 Z"
+  <!-- Outer skirt of lid (covers cup rim, slightly wider than cup top) -->
+  <path d="M 56 60 L 144 60 L 142 80 Q 142 82 140 82 L 60 82 Q 58 82 58 80 Z"
         fill="#1d1d1d" stroke="#1d1d1d" stroke-width="3" stroke-linejoin="round"/>
 
-  <!-- Lid highlight (top-left curve, suggesting plastic sheen) -->
-  <path d="M 70 52 Q 88 44 104 42" stroke="rgba(255,255,255,0.3)" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <!-- Flat top deck of lid: a wide thin ellipse that reads as the flat surface -->
+  <ellipse cx="100" cy="60" rx="44" ry="5"
+           fill="#2a2a2a" stroke="#1d1d1d" stroke-width="3"/>
 
-  <!-- Sip-hole shadow on top of lid -->
-  <ellipse cx="100" cy="40" rx="9" ry="2" fill="#000" opacity="0.55"/>
+  <!-- Highlight along the front edge of the flat top -->
+  <path d="M 64 60 Q 100 64 136 60" stroke="rgba(255,255,255,0.22)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+
+  <!-- Subtle horizontal seam between the top deck and the skirt (the snap rim) -->
+  <path d="M 58 70 L 142 70" stroke="rgba(0,0,0,0.45)" stroke-width="1" stroke-linecap="round"/>
+
+  <!-- Sip-hole on the top deck (small slot, slightly forward of center) -->
+  <rect x="92" y="58" width="16" height="3" rx="1.5" fill="#000" opacity="0.7"/>
 </svg>
