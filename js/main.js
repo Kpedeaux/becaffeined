@@ -372,6 +372,7 @@ async function endGameWithLeaderboard({ score, levelReached, won }) {
   const liveTop = await fetchTopScores();
   let topScores = liveTop;
   const qualifies = await qualifiesForTopScore(score);
+  let madeLeaderboard = false;
   if (qualifies) {
     let rank = liveTop.findIndex(e => score > e.score) + 1;
     if (rank === 0) rank = liveTop.length + 1;
@@ -382,9 +383,10 @@ async function endGameWithLeaderboard({ score, levelReached, won }) {
       levelReached,
       bonusLevels: game.bonusLevelsReached,
     });
+    madeLeaderboard = true;
   }
 
-  return { isNewBest, high, topScores };
+  return { isNewBest, high, topScores, madeLeaderboard };
 }
 
 async function onTimeOut() {
@@ -392,7 +394,7 @@ async function onTimeOut() {
   game.state = STATE.GAME_OVER;
   sfxGameOver();
   const totalScore = game.totalScore;
-  const { isNewBest, high, topScores } = await endGameWithLeaderboard({
+  const { isNewBest, high, topScores, madeLeaderboard } = await endGameWithLeaderboard({
     score: totalScore,
     levelReached: LEVELS[game.level].id,
     won: false,
@@ -405,6 +407,7 @@ async function onTimeOut() {
     totalLevels: 10,
     won: false,
     topScores,
+    madeLeaderboard,
   });
   if (choice === 'replay') startGame();
   else returnToTitle();
@@ -416,7 +419,7 @@ async function onWin() {
   game.totalScore += Math.round(game.timeLeft) * 10;
 
   const lastClearedId = LEVELS[game.level] ? LEVELS[game.level].id : 8;
-  const { isNewBest, high, topScores } = await endGameWithLeaderboard({
+  const { isNewBest, high, topScores, madeLeaderboard } = await endGameWithLeaderboard({
     score: game.totalScore,
     levelReached: lastClearedId,
     won: true,
@@ -430,6 +433,7 @@ async function onWin() {
     won: true,
     bonusLevelsReached: game.bonusLevelsReached,
     topScores,
+    madeLeaderboard,
   });
   if (choice === 'replay') startGame();
   else returnToTitle();

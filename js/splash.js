@@ -161,7 +161,11 @@ export function showSplash(splash, levelNumber, totalLevels) {
 }
 
 /** Game over overlay. Resolves with 'replay' when player chooses to play again. */
-export function showGameOver({ score, highScore, isNewBest, levelReached, totalLevels, won, bonusLevelsReached = 0, topScores = [] }) {
+export function showGameOver({
+  score, highScore, isNewBest, levelReached, totalLevels, won,
+  bonusLevelsReached = 0, topScores = [],
+  madeLeaderboard = false, leaderboardLimit = 10,
+}) {
   return new Promise(resolve => {
     clear();
     const root = overlayEl();
@@ -220,9 +224,26 @@ export function showGameOver({ score, highScore, isNewBest, levelReached, totalL
       inner.appendChild(pull);
     }
 
-    if (topScores && topScores.length > 0) {
-      inner.appendChild(makeTopScoresList(topScores));
+    // Always render the leaderboard section so non-qualifying players see
+    // what they're chasing. Heading + (list OR empty-state) + encouragement.
+    inner.appendChild(makeTopScoresList(topScores || []));
+
+    const cta = document.createElement('p');
+    cta.className = 'leaderboard-cta';
+    const list = topScores || [];
+    if (madeLeaderboard) {
+      cta.textContent = won
+        ? 'You earned a spot on the leaderboard. Play again to climb higher.'
+        : 'You made the leaderboard. Play again to climb higher.';
+    } else if (list.length === 0) {
+      cta.textContent = 'No scores on the board yet. Play again to be the first.';
+    } else if (list.length < leaderboardLimit) {
+      cta.textContent = `${list.length} of ${leaderboardLimit} spots taken. Play again to grab one.`;
+    } else {
+      const min = list[list.length - 1].score;
+      cta.textContent = `Beat ${min.toLocaleString()} to land on the leaderboard. Try again.`;
     }
+    inner.appendChild(cta);
 
     const btnRow = document.createElement('div');
     btnRow.className = 'btn-row';
@@ -402,15 +423,23 @@ export function showBonusQuestion({
   });
 }
 
-/** Renders the top 3 leaderboard as a list. Returns the element to
- *  append. Caller decides where it goes in the layout. */
+/** Renders the global leaderboard as a list. Returns the element to
+ *  append. Caller decides where it goes in the layout. Empty list still
+ *  renders a heading + placeholder so the section is always visible. */
 function makeTopScoresList(topScores) {
   const wrap = document.createElement('div');
   wrap.className = 'top-scores';
   const heading = document.createElement('p');
   heading.className = 'overlay__eyebrow top-scores__heading';
-  heading.textContent = 'Top 3';
+  heading.textContent = 'Leaderboard';
   wrap.appendChild(heading);
+  if (!topScores || topScores.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'top-scores__empty';
+    empty.textContent = 'No scores yet.';
+    wrap.appendChild(empty);
+    return wrap;
+  }
   const list = document.createElement('ol');
   list.className = 'top-scores__list';
   topScores.forEach((entry, i) => {

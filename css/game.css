@@ -849,7 +849,7 @@
 }
 
 
-/* ----- Top 3 leaderboard list ----- */
+/* ----- Global leaderboard list ----- */
 .top-scores {
   width: 100%;
   max-width: 360px;
@@ -857,6 +857,22 @@
   border: 1px solid var(--cr-hairline);
   padding: var(--space-sm) var(--space-md);
   background: var(--cr-cream-dark);
+}
+.top-scores__empty {
+  margin: 4px 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--cr-charcoal-2);
+}
+.leaderboard-cta {
+  width: 100%;
+  max-width: 360px;
+  margin: var(--space-sm) auto 0;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--cr-ink);
+  font-style: italic;
 }
 .top-scores__heading {
   margin: 0 0 8px;
