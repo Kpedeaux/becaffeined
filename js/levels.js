@@ -51,7 +51,8 @@ export const LEVELS = [
       eyebrow: 'The Roch Blend',
       title: 'Coffee and Chicory.',
       subtitle: 'The New Orleans tradition.',
-      photo: 'assets/splash/cold-brew.jpg',
+      photo: 'assets/splash/chicory.jpg',
+      photoPosition: 'bottom',
       body:
         'Our Roch Blend pays tribute to a century-old New Orleans ' +
         'coffee tradition: coffee blended with chicory root for a smoother, ' +
