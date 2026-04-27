@@ -125,19 +125,12 @@
   </p>
 </noscript>
 
-<!-- Service worker is intentionally disabled during rapid iteration. The
-     sw.js file at the root is a kill-switch that auto-uninstalls any prior
-     version that may be cached on a returning visitor's phone. We'll bring
-     a proper offline-first SW back when the game stops changing daily. -->
-<script>
-  if ('serviceWorker' in navigator) {
-    // Register the kill-switch once so any old SW gets evicted, then it
-    // unregisters itself in its own activate handler.
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    });
-  }
-</script>
+<!-- Service worker registration is intentionally disabled during rapid
+     iteration. /sw.js still exists as a kill-switch that the user's
+     EXISTING service worker (from earlier deploys) will auto-update to,
+     uninstalling itself in the process. New visitors don't register a
+     SW at all. We'll bring back a proper offline-first SW once the game
+     stabilizes — see task #17. -->
 
 <!-- Game entry — ES modules. -->
 <script type="module" src="js/main.js"></script>

@@ -1,20 +1,25 @@
 /* ==========================================================================
- * sw.js — Kill-switch service worker
+ * sw.js — Kill-switch service worker (silent self-cleanup version)
  *
  * Why this exists:
  *   Earlier deploys registered a cache-first service worker (v1–v4). On
  *   mobile Chrome (especially Samsung's variant) those cached versions
- *   don't release cleanly via Site settings → Clear & reset, leaving
- *   players seeing a stale version of the game.
+ *   refuse to release via Site settings → Clear & reset.
  *
- *   This file replaces those previous service workers. On install it
- *   wipes every cache, takes immediate control of all open tabs, and
- *   unregisters itself. Next page load goes straight to the network
- *   with normal HTTP caching governed by /_headers.
+ *   The browser auto-checks /sw.js on its update cycle. When it sees this
+ *   file replace the old one, it installs and activates this version. On
+ *   activate, this worker:
+ *     1. wipes every cache,
+ *     2. takes control of any tabs that the old worker had,
+ *     3. unregisters itself.
  *
- *   When the game stabilizes (no more visual or gameplay iteration),
- *   we'll restore a proper service worker for offline play and PWA
- *   installs.
+ *   It does NOT call client.navigate() — that caused a reload loop with
+ *   the registration script in index.html. The user simply refreshes
+ *   their tab whenever they next look at it; everything is fresh from
+ *   network. New visitors don't register this SW at all (the registration
+ *   call has been removed from index.html).
+ *
+ *   When the game stabilizes, restore a proper offline-first SW.
  * ========================================================================== */
 
 self.addEventListener('install', (event) => {
@@ -26,21 +31,15 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    // Wipe every cache one more time, in case anything was created post-install
     const keys = await caches.keys();
     await Promise.all(keys.map((k) => caches.delete(k)));
-    // Take control of any tab that's currently open
     await self.clients.claim();
-    // Unregister this worker so future visits hit the network directly
     await self.registration.unregister();
-    // Force every controlled tab to reload — the user sees fresh content
-    // immediately without having to refresh manually.
-    const allClients = await self.clients.matchAll({ type: 'window' });
-    for (const client of allClients) {
-      try { client.navigate(client.url); } catch { /* navigation may not be permitted */ }
-    }
+    // Deliberately no client.navigate() here — that produces an infinite
+    // reload loop when paired with index.html's registration script.
   })());
 });
 
-// No fetch handler — when this SW is active it acts as a pass-through. Once
-// it unregisters in activate(), all subsequent loads go straight to network.
+// No fetch handler. While this SW is active it acts as a transparent
+// pass-through; once activate() unregisters it, every subsequent request
+// goes straight to network.
