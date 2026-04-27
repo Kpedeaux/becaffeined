@@ -608,4 +608,55 @@
   .overlay__inner { max-width: 640px; }
 }
 
+
+/* ----- Visual FX -----
+   Particle bursts and screen flash for cascade dopamine. The board frame
+   has overflow:hidden so edge bursts get clipped, which actually looks
+   intentional — like the energy is too big to contain. */
+.burst {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--burst-color, var(--cr-red));
+  box-shadow: 0 0 6px var(--burst-color, var(--cr-red));
+  pointer-events: none;
+  left: 0; top: 0;
+  transform: translate(calc(var(--cx) - 4px), calc(var(--cy) - 4px));
+  animation: burst-fly 650ms cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
+  z-index: 6;
+}
+@keyframes burst-fly {
+  0% {
+    transform: translate(calc(var(--cx) - 4px), calc(var(--cy) - 4px)) scale(0.6);
+    opacity: 1;
+  }
+  60% { opacity: 1; }
+  100% {
+    transform: translate(
+      calc(var(--cx) - 4px + var(--dx)),
+      calc(var(--cy) - 4px + var(--dy))
+    ) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.screen-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(165, 38, 57, calc(var(--flash-strength, 0.5) * 0.55)),
+    rgba(165, 38, 57, 0)
+  );
+  animation: flash-fade 320ms ease-out forwards;
+}
+@keyframes flash-fade {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 .piece__art img { image-rendering: -webkit-optimize-contrast; }

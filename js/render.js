@@ -173,6 +173,42 @@ export function spawnComboBanner(boardEl, text) {
   setTimeout(() => banner.remove(), 950);
 }
 
+
+/** Burst of small particles flying outward from a board cell. Used to
+ *  give matches visible payoff. Each particle is a tiny absolutely-
+ *  positioned div with a CSS keyframe animation that translates and
+ *  fades. Cleaned up automatically after the animation finishes. */
+export function spawnBurst(boardEl, r, c, color = '#A52639') {
+  const count = 8;
+  const cx = xFor(c) + cellSize / 2;
+  const cy = yFor(r) + cellSize / 2;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
+    const dist = cellSize * (0.6 + Math.random() * 0.5);
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    const p = document.createElement('div');
+    p.className = 'burst';
+    p.style.setProperty('--cx', px(cx));
+    p.style.setProperty('--cy', px(cy));
+    p.style.setProperty('--dx', px(dx));
+    p.style.setProperty('--dy', px(dy));
+    p.style.setProperty('--burst-color', color);
+    boardEl.appendChild(p);
+    setTimeout(() => p.remove(), 700);
+  }
+}
+
+/** Brief full-viewport flash overlay. Used at cascade 3+ for that
+ *  "screen wash" feel that big match-3 games use to signal a big move. */
+export function spawnScreenFlash(intensity = 1.0) {
+  const fl = document.createElement('div');
+  fl.className = 'screen-flash';
+  fl.style.setProperty('--flash-strength', intensity);
+  document.body.appendChild(fl);
+  setTimeout(() => fl.remove(), 350);
+}
+
 /** Briefly shake the board frame element. */
 export function shake(frameEl) {
   frameEl.classList.remove('shake');
@@ -205,6 +241,14 @@ export async function animateCascade(boardEl, frameEl, event) {
     el.classList.add('is-clearing');
   }
 
+  // Particle bursts from every cleared cell — the visual payoff for
+  // matching. Color picks up the brand red for now; could vary by drink
+  // type later for more variety.
+  for (const k of popPositions) {
+    const [r, c] = k.split(',').map(Number);
+    spawnBurst(boardEl, r, c);
+  }
+
   // Score popups (one per match center)
   if (event.matches && event.matches.length) {
     for (const m of event.matches) {
@@ -216,6 +260,8 @@ export async function animateCascade(boardEl, frameEl, event) {
   if (event.cascadeLevel >= 3) {
     const labels = ['', '', '', 'Tasty!', 'Buzzed!', 'Caffeinated!', 'Wired!', 'Becaffeined!'];
     spawnComboBanner(boardEl, labels[Math.min(event.cascadeLevel, labels.length - 1)]);
+    // Screen flash — full-viewport red wash for big-cascade dopamine
+    spawnScreenFlash(0.4 + event.cascadeLevel * 0.08);
   }
 
   // Wait for pop animation to finish
@@ -263,7 +309,7 @@ export async function animateCascade(boardEl, frameEl, event) {
   await sleep(380);
 
   // Optional shake on big cascades
-  if (event.cascadeLevel >= 4 || (event.cleared && event.cleared.length >= 8)) {
+  if (event.cascadeLevel >= 3 || (event.cleared && event.cleared.length >= 8)) {
     shake(frameEl);
   }
 }

@@ -211,6 +211,54 @@ function grindRip(pitch = 1.0, duration = 0.12) {
   src.stop(t + duration); saw.stop(t + duration);
 }
 
+/** Bean shower — 5-7 quick low percussive plucks, randomized pitch and
+ *  timing, sounds like coffee beans tumbling. Used as cascade-2+ reward. */
+function beanShower(intensity = 1.0) {
+  const count = 5 + Math.floor(intensity * 2);
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const f = 220 + Math.random() * 280;
+      pluck({
+        freq: f, type: 'sine', duration: 0.045, peak: 0.13,
+        glideTo: f * 0.65, glideTime: 0.04,
+        dry: 0.6, wet: 0.45,
+      });
+    }, i * (32 + Math.random() * 28));
+  }
+}
+
+/** Crowd "ooh" cheer — filtered noise with rising-then-falling envelope.
+ *  Brief and joyful. Used as cascade-3+ excitement layer. */
+function crowdCheer(intensity = 1.0) {
+  if (!ensureCtx() || muted) return;
+  resume();
+  const t = ctx.currentTime;
+  const dur = 0.36 * intensity;
+  const sampleCount = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < sampleCount; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.Q.value = 1.2;
+  filter.frequency.setValueAtTime(900, t);
+  filter.frequency.linearRampToValueAtTime(1900, t + dur * 0.4);
+  filter.frequency.linearRampToValueAtTime(1300, t + dur);
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(0.20 * intensity, t + dur * 0.35);
+  env.gain.linearRampToValueAtTime(0.0001, t + dur);
+  src.connect(filter); filter.connect(env);
+  const buses = busSend(0.55, 0.65);
+  env.connect(buses.dry); env.connect(buses.wet);
+  src.start(t);
+  src.stop(t + dur + 0.05);
+}
+
+
+
 /* ==========================================================================
  * Public SFX
  * ========================================================================== */
@@ -238,25 +286,37 @@ export function sfxIllegal() {
 }
 
 export function sfxMatch(cascadeLevel = 1, matchLength = 3) {
-  // Match = grinder rip. Pitch climbs with cascade level so chains feel
-  // satisfying. Longer matches get a brighter "bean crack" snap on top.
+  // Cascade 1: just the grind + snap.
+  // Cascade 2+: add bean-shower (drops tumbling).
+  // Cascade 3+: add crowd cheer + a triumphant bell (the chain context
+  //   makes it feel celebratory, not the sad solo "dong" of before).
+  // Cascade 4+: add a steam burst.
+  // Cascade 5+: handled separately by sfxBigCombo at the end of the chain.
   const pitch = 1 + (cascadeLevel - 1) * 0.20;
   const dur = 0.10 + Math.min(cascadeLevel - 1, 3) * 0.025;
   grindRip(pitch, dur);
-  // Bean-crack snap (high sine descending click) for any match
   setTimeout(() => pluck({
     freq: 2200 * pitch, type: 'sine', duration: 0.05, peak: 0.18,
     glideTo: 1100 * pitch, glideTime: 0.045,
     dry: 0.6, wet: 0.4,
   }), 8);
-  // Match-4+ get an extra grind echo
   if (matchLength >= 4) {
     setTimeout(() => grindRip(pitch * 1.18, dur * 0.85), 75);
   }
-  // Note: no bell ding on regular match cascades. The bell felt sad
-  // and out of place on a 2-cascade chain. Pitch climb on the grind +
-  // snap already conveys the chain reward. Bells are reserved for big
-  // combos (sfxBigCombo, fires at cascade 4+) and level-ups.
+  if (cascadeLevel >= 2) {
+    setTimeout(() => beanShower(0.6 + cascadeLevel * 0.1), 55);
+  }
+  if (cascadeLevel >= 3) {
+    setTimeout(() => crowdCheer(0.7 + cascadeLevel * 0.08), 110);
+    setTimeout(() => bellDing(1.25 + cascadeLevel * 0.10), 200);
+  }
+  if (cascadeLevel >= 4) {
+    setTimeout(() => noise({
+      duration: 0.30, peak: 0.20,
+      filterType: 'bandpass', freq: 4000, q: 0.8, freqEnd: 8000,
+      attack: 0.04, dry: 0.5, wet: 0.7,
+    }), 240);
+  }
 }
 
 function bellDing(scale = 1.0) {
