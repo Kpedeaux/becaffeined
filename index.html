@@ -131,4 +131,14 @@
   </p>
 </noscript>
 
-<!-- Service worker registration is intentionally
+<!-- Service worker registration is intentionally disabled during rapid
+     iteration. /sw.js still exists as a kill-switch that the user's
+     EXISTING service worker (from earlier deploys) will auto-update to,
+     uninstalling itself in the process. New visitors don't register a
+     SW at all. We'll bring back a proper offline-first SW once the game
+     stabilizes. -->
+
+<!-- Game entry — ES modules. -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
