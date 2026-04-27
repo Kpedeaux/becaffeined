@@ -162,10 +162,16 @@
 /* CR-red CTA button below the board. Width tracks the board frame so it
    reads as an extension of the game UI, not a stray ad banner. The split
    "Visit / crcoffeenola.com" stack reads better on small phones than a
-   single line of small text. */
+   single line of small text.
+
+   margin-top is explicit (not just relying on .app-main's gap) because
+   .board-frame has a 14-26px drop shadow that visually bleeds toward
+   anything immediately below it. The extra space cleanly separates the
+   button from the last row of pieces. */
 .cta-shop {
   width: 100%;
   max-width: var(--board-frame-width);
+  margin-top: var(--space-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -399,7 +405,19 @@
   40%, 60%  { transform: translate3d(5px, 0, 0); }
 }
 
-/* ----- Modal overlays (title, splash, end) ----- */
+/* ----- Modal overlays (title, splash, end) -----
+   The overlay must remain SCROLLABLE — when the splash content is taller
+   than the viewport (Chromebook landscape, narrow desktop windows, phones
+   in landscape), the user has to be able to reach the button at the
+   bottom. Without overflow:auto here, the whole content gets cut off and
+   the Play / Continue button disappears below the fold with no way to
+   reach it.
+
+   align-items uses flex-start instead of center so when content is taller
+   than viewport, scrolling actually works (centering items taller than
+   their container hides the top — they overflow upward, unscrollable).
+   The .overlay__inner uses margin:auto so it still centers vertically
+   when there IS room to spare. */
 .overlay {
   position: fixed;
   inset: 0;
@@ -407,10 +425,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: var(--space-md);
   background: var(--cr-cream);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   animation: overlay-in 350ms var(--ease-snap);
+}
+.overlay__inner {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 @keyframes overlay-in {
   from { opacity: 0; transform: scale(1.02); }
@@ -570,6 +594,59 @@
 }
 
 [hidden] { display: none !important; }
+
+@media (min-width: 600px) {
+  .app-main { padding: var(--space-lg); }
+}
+@media (min-width: 900px) {
+  .overlay__inner { max-width: 640px; }
+}
+
+.piece__art img { image-rendering: -webkit-optimize-contrast; }
+.btn-row {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.title-marks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.title-marks__divider {
+  width: 1px;
+  height: 32px;
+  background: var(--cr-hairline-2);
+}
+.title-best {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cr-charcoal-2);
+  margin-top: var(--space-md);
+}
+.title-best strong {
+  color: var(--cr-ink);
+  font-weight: 700;
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+[hidden] { display: none !important; }
+
+@media (min-width: 600px) {
+  .app-main { padding: var(--space-lg); }
+}
+@media (min-width: 900px) {
+  .overlay__inner { max-width: 640px; }
+}
+
+.piece__art img { image-rendering: -webkit-optimize-contrast; }
 
 @media (min-width: 600px) {
   .app-main { padding: var(--space-lg); }
