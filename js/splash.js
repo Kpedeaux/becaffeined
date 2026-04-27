@@ -62,8 +62,8 @@ export function showTitle({ highScore }) {
     const body = document.createElement('p');
     body.className = 'overlay__body';
     body.textContent = 'Match three drinks to clear them. Bigger matches make ' +
-      'special pieces. Make it through eight levels — we\'ll teach you something ' +
-      'about CR between each one.';
+      'special pieces. Make it through eight levels and learn a little about ' +
+      'CR Coffee Shop between each one.';
     inner.appendChild(body);
 
     const btnRow = document.createElement('div');
@@ -148,7 +148,7 @@ export function showSplash(splash, levelNumber, totalLevels) {
 }
 
 /** Game over overlay. Resolves with 'replay' when player chooses to play again. */
-export function showGameOver({ score, highScore, isNewBest, levelReached, totalLevels, won }) {
+export function showGameOver({ score, highScore, isNewBest, levelReached, totalLevels, won, bonusEarned }) {
   return new Promise(resolve => {
     clear();
     const root = overlayEl();
@@ -169,7 +169,7 @@ export function showGameOver({ score, highScore, isNewBest, levelReached, totalL
     const sub = document.createElement('p');
     sub.className = 'overlay__subtitle';
     sub.textContent = won
-      ? 'You cleared all eight levels. Your next cup is on us — kind of.'
+      ? 'You cleared all eight levels. Time for a real cup at any of our four locations.'
       : `You reached level ${levelReached} of ${totalLevels}. Try again?`;
     inner.appendChild(sub);
 
@@ -186,6 +186,16 @@ export function showGameOver({ score, highScore, isNewBest, levelReached, totalL
       </div>
     `;
     inner.appendChild(stat);
+
+    if (typeof bonusEarned === 'number' && bonusEarned > 0) {
+      const bonusLine = document.createElement('p');
+      bonusLine.className = 'title-best';
+      const isCorrect = bonusEarned >= 5000;
+      bonusLine.innerHTML = isCorrect
+        ? `Bonus answer correct <strong>+${bonusEarned.toLocaleString()}</strong>`
+        : `Bonus attempt <strong>+${bonusEarned.toLocaleString()}</strong>`;
+      inner.appendChild(bonusLine);
+    }
 
     if (isNewBest) {
       const pull = document.createElement('p');
@@ -224,6 +234,128 @@ export function showPause() {
     btnRow.className = 'btn-row';
     btnRow.appendChild(makeButton('Resume', () => { hide(); resolve(); }));
     inner.appendChild(btnRow);
+    root.appendChild(inner);
+  });
+}
+
+/* ==========================================================================
+ * Bonus trivia round — fires after the player wins all 8 levels. Pulls a
+ * random multiple-choice question from the splash facts they saw between
+ * levels. Correct answer awards 5000 bonus points; wrong answer awards 500
+ * for trying. Returns the bonus number to the caller.
+ * ========================================================================== */
+
+const TRIVIA = [
+  {
+    q: 'How many CR Coffee locations are there in New Orleans?',
+    options: ['Two', 'Three', 'Four', 'Five'],
+    correct: 2,
+  },
+  {
+    q: 'What model of antique roaster does CR use?',
+    options: [
+      '1910s Royal No. 6',
+      '1920s Probat',
+      '1900s Burns',
+      'Modern Diedrich',
+    ],
+    correct: 0,
+  },
+  {
+    q: 'Where do CR\'s green coffee beans come through?',
+    options: [
+      'Port of Houston',
+      'Port of New Orleans',
+      'Port of Mobile',
+      'Port of Tampa',
+    ],
+    correct: 1,
+  },
+  {
+    q: 'What is the name of CR\'s private event space?',
+    options: [
+      'The Riverside Room',
+      'The Magazine Room',
+      'The Crescent Room',
+      'The St. Roch Room',
+    ],
+    correct: 2,
+  },
+  {
+    q: 'What year was Coast Roast Coffee founded?',
+    options: ['1995', '2005', '2009', '2015'],
+    correct: 2,
+  },
+  {
+    q: 'Which CR blend honors the New Orleans coffee-and-chicory tradition?',
+    options: [
+      'Streetcar Blend',
+      'Magazine Blend',
+      'St. Roch Blend',
+      'French Roast',
+    ],
+    correct: 2,
+  },
+];
+
+export function showBonusQuestion() {
+  return new Promise(resolve => {
+    clear();
+    const root = overlayEl();
+    const inner = document.createElement('div');
+    inner.className = 'overlay__inner';
+
+    const trivia = TRIVIA[Math.floor(Math.random() * TRIVIA.length)];
+
+    const eyebrow = document.createElement('p');
+    eyebrow.className = 'overlay__eyebrow';
+    eyebrow.textContent = 'Bonus Round';
+    inner.appendChild(eyebrow);
+
+    const title = document.createElement('h2');
+    title.className = 'overlay__title';
+    title.textContent = 'One Question.';
+    inner.appendChild(title);
+
+    const sub = document.createElement('p');
+    sub.className = 'overlay__subtitle';
+    sub.textContent = 'Answer correctly for 5,000 bonus points.';
+    inner.appendChild(sub);
+
+    const question = document.createElement('p');
+    question.className = 'overlay__body';
+    question.textContent = trivia.q;
+    inner.appendChild(question);
+
+    const choices = document.createElement('div');
+    choices.className = 'trivia-choices';
+    let answered = false;
+    trivia.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn--ghost trivia-choice';
+      btn.type = 'button';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        const correct = i === trivia.correct;
+        btn.classList.add(correct ? 'is-correct' : 'is-wrong');
+        // Reveal the right answer if they got it wrong
+        if (!correct) {
+          const right = choices.children[trivia.correct];
+          if (right) right.classList.add('is-correct');
+        }
+        // Disable all buttons
+        for (const b of choices.children) b.disabled = true;
+        setTimeout(() => {
+          hide();
+          resolve(correct ? 5000 : 500);
+        }, 1600);
+      }, { once: true });
+      choices.appendChild(btn);
+    });
+    inner.appendChild(choices);
+
     root.appendChild(inner);
   });
 }

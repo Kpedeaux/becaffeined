@@ -19,7 +19,7 @@ import {
   activateColorBomb, getHint, SPECIALS,
 } from './board.js';
 import {
-  mount, animateSwap, animateCascades,
+  mount, animateSwap, animateCascade, animateCascades, reconcile,
   setSelected, clearSelected, setHint, clearHint, measure,
 } from './render.js';
 import { attachInput } from './input.js';
@@ -29,7 +29,7 @@ import {
   unlockOnGesture, isMuted, toggleMute,
 } from './audio.js';
 import {
-  showTitle, showSplash, showGameOver, showPause,
+  showTitle, showSplash, showGameOver, showPause, showBonusQuestion,
 } from './splash.js';
 import {
   LEVELS, TIME_BONUS_PER_PIECE, TIME_WARN_THRESHOLD, HINT_DELAY_MS,
@@ -225,20 +225,27 @@ async function runCascade(events) {
   let totalCleared = 0;
   let pointsEarned = 0;
   let highestCascade = 0;
+
+  // Walk events one at a time, firing the SFX for that cascade right
+  // before its animation starts. This is what makes the falls feel
+  // alive — every match-on-fall now has its own audio cue, not one
+  // batch of sounds at t=0 followed by silent visuals.
   for (const ev of events) {
-    if (ev.shuffle) continue;
+    if (ev.shuffle) {
+      await animateCascade(els.board(), els.boardFrame(), ev);
+      continue;
+    }
     totalCleared += ev.cleared.length;
     pointsEarned += ev.scoreDelta;
     highestCascade = Math.max(highestCascade, ev.cascadeLevel);
-    // Pass the longest match length so sfxMatch can layer in the extra
-    // grind echo for match-4 and match-5 specials.
     const longestMatch = ev.matches.reduce((m, x) => Math.max(m, x.length), 3);
     sfxMatch(ev.cascadeLevel, longestMatch);
     if (ev.specialSpawns.length > 0) sfxSpecial();
+    await animateCascade(els.board(), els.boardFrame(), ev);
   }
 
-  // Animate everything sequentially
-  await animateCascades(els.board(), els.boardFrame(), events);
+  // Reconcile DOM with engine state after the chain settles
+  if (events.length) reconcile(els.board(), events[events.length - 1].nextBoard);
 
   // Apply state changes after animations so the HUD ticks visibly
   const finalBoard = events.length ? events[events.length - 1].nextBoard : game.board;
@@ -301,6 +308,12 @@ async function onWin() {
   game.state = STATE.GAME_OVER;
   // Bonus for finishing all levels: include leftover time as score
   game.totalScore += Math.round(game.timeLeft) * 10;
+
+  // Trivia bonus round — one multiple-choice question pulled from the
+  // splash content the player has already seen. Correct answer = +5000.
+  const bonus = await showBonusQuestion();
+  if (bonus > 0) game.totalScore += bonus;
+
   const isNewBest = setHighScore(game.totalScore);
   const high = getHighScore();
   trackGameOver(game.totalScore, LEVELS.length, true);
@@ -312,6 +325,7 @@ async function onWin() {
     levelReached: LEVELS.length,
     totalLevels: LEVELS.length,
     won: true,
+    bonusEarned: bonus,
   });
   if (choice === 'replay') startGame();
   else returnToTitle();

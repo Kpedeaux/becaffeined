@@ -34,12 +34,12 @@ export const LEVELS = [
       eyebrow: 'Our Coffee',
       title: 'Antique Roasted.',
       subtitle: 'Since 1910.',
-      photo: 'assets/splash/coast-roast.jpg',
+      photo: 'assets/splash/coffee-roaster.jpg',
       body:
         'Every batch of Coast Roast Coffee is roasted on 1910s Royal No. 6 ' +
-        'drum roasters — machines older than most of the buildings in ' +
-        'New Orleans. Slow drum roasting gives a naturally sweeter, ' +
-        'smoother cup.',
+        'drum roasters. These machines run slow and steady, the way coffee ' +
+        'was made before commercial speed roasting. The result is a ' +
+        'naturally sweeter, smoother cup.',
       pull: null,
     },
   },
@@ -48,14 +48,15 @@ export const LEVELS = [
     target: 1600,
     seconds: 80,
     splash: {
-      eyebrow: 'Magazine Street',
-      title: 'The Front Door.',
-      subtitle: '#A52639',
-      photo: 'assets/splash/magazine-umbrella.jpg',
+      eyebrow: 'The St. Roch Blend',
+      title: 'Coffee and Chicory.',
+      subtitle: 'The New Orleans tradition.',
+      photo: 'assets/splash/cold-brew.jpg',
       body:
-        'The front door at our flagship is painted Benjamin Moore ' +
-        '"Million Dollar Red" 2003-10. The same red lives on the striped ' +
-        'patio umbrella. Find us at 3618 Magazine Street.',
+        'Our St. Roch Blend pays tribute to a century-old New Orleans ' +
+        'coffee tradition: coffee blended with chicory root for a smoother, ' +
+        'richer cup. Taste it at any of our four locations or order beans ' +
+        'to ship home.',
       pull: null,
     },
   },
@@ -69,10 +70,10 @@ export const LEVELS = [
       subtitle: 'Second-largest coffee port in the US.',
       photo: 'assets/splash/beans-macro.jpg',
       body:
-        'All green beans come through the Port of New Orleans — the ' +
+        'All green beans come through the Port of New Orleans, the ' +
         'second-largest coffee port in the United States. Kevin works ' +
-        'with local importers and direct farm relationships in Central ' +
-        'and South America.',
+        'with local importers and keeps direct relationships with farms ' +
+        'in Central and South America.',
       pull: null,
     },
   },
@@ -103,8 +104,8 @@ export const LEVELS = [
       subtitle: null,
       photo: 'assets/splash/fresh-pour.jpg',
       body:
-        'Streetcar (medium). French Roast (dark). St. Roch Blend ' +
-        '(coffee and chicory — the New Orleans tradition). Plus ' +
+        'Streetcar (medium). French Roast (dark). St. Roch Blend, our ' +
+        'coffee and chicory blend for the New Orleans tradition. Plus ' +
         'Cold Brew Blend and CR Espresso. All ship nationwide.',
       pull: null,
     },

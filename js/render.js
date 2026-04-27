@@ -174,17 +174,31 @@ export function spawnComboBanner(boardEl, text) {
 }
 
 
-/** Burst of small particles flying outward from a board cell. Used to
- *  give matches visible payoff. Each particle is a tiny absolutely-
- *  positioned div with a CSS keyframe animation that translates and
- *  fades. Cleaned up automatically after the animation finishes. */
-export function spawnBurst(boardEl, r, c, color = '#A52639') {
-  const count = 8;
+// Per-drink particle colors, pulled from the brand accent for each piece.
+// Particles match the drink's dominant color so the burst feels connected
+// to what was just cleared.
+const PIECE_COLORS = {
+  'iced-cr':     '#C68B4B',
+  'streetcar':   '#A52639',
+  'cappuccino':  '#E6C9A5',
+  'bayou-beast': '#4FB36A',
+  'iced-mocha':  '#5C3A2E',
+  'coffee-bag':  '#C9A578',
+};
+
+/** Burst of small particles flying outward from a board cell. Particle
+ *  count and travel distance escalate with cascade level — chains feel
+ *  bigger every step. Color picks up the drink's brand accent. */
+export function spawnBurst(boardEl, r, c, type = null, cascadeLevel = 1) {
+  // 8 particles on cascade 1, +4 per level, capped at 24
+  const count = Math.min(8 + (cascadeLevel - 1) * 4, 24);
+  const distMul = 1 + (cascadeLevel - 1) * 0.18;
+  const color = PIECE_COLORS[type] || '#A52639';
   const cx = xFor(c) + cellSize / 2;
   const cy = yFor(r) + cellSize / 2;
   for (let i = 0; i < count; i++) {
     const angle = (i / count) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
-    const dist = cellSize * (0.6 + Math.random() * 0.5);
+    const dist = cellSize * (0.6 + Math.random() * 0.5) * distMul;
     const dx = Math.cos(angle) * dist;
     const dy = Math.sin(angle) * dist;
     const p = document.createElement('div');
@@ -197,6 +211,18 @@ export function spawnBurst(boardEl, r, c, color = '#A52639') {
     boardEl.appendChild(p);
     setTimeout(() => p.remove(), 700);
   }
+}
+
+/** Brief white flash on a single tile right before it bursts. Adds a
+ *  popcorn-popping crispness to the moment of clear. */
+export function spawnTileFlash(boardEl, r, c) {
+  const flash = document.createElement('div');
+  flash.className = 'tile-flash';
+  flash.style.setProperty('--x', px(xFor(c)));
+  flash.style.setProperty('--y', px(yFor(r)));
+  flash.style.setProperty('--size', px(cellSize));
+  boardEl.appendChild(flash);
+  setTimeout(() => flash.remove(), 240);
 }
 
 /** Brief full-viewport flash overlay. Used at cascade 3+ for that
@@ -241,12 +267,15 @@ export async function animateCascade(boardEl, frameEl, event) {
     el.classList.add('is-clearing');
   }
 
-  // Particle bursts from every cleared cell — the visual payoff for
-  // matching. Color picks up the brand red for now; could vary by drink
-  // type later for more variety.
+  // Tile flashes + particle bursts from every cleared cell. Particles
+  // grow in count and travel distance with cascade level. Color picks
+  // up the cleared drink's brand accent.
   for (const k of popPositions) {
     const [r, c] = k.split(',').map(Number);
-    spawnBurst(boardEl, r, c);
+    const el = pieceAt(boardEl, r, c);
+    const type = el ? el.dataset.type : null;
+    spawnTileFlash(boardEl, r, c);
+    spawnBurst(boardEl, r, c, type, event.cascadeLevel);
   }
 
   // Score popups (one per match center)
