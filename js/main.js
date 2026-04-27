@@ -29,7 +29,8 @@ import {
   unlockOnGesture, isMuted, toggleMute,
 } from './audio.js';
 import {
-  showTitle, showSplash, showGameOver, showPause, showBonusQuestion, showNameEntry,
+  showTitle, showSplash, showGameOver, showPause, showBonusQuestion,
+  showNameEntry, refreshLeaderboard,
 } from './splash.js';
 import {
   LEVELS, TIME_BONUS_PER_PIECE, TIME_WARN_THRESHOLD, HINT_DELAY_MS,
@@ -471,9 +472,13 @@ async function returnToTitle() {
   game.totalScore = 0;
   els.board().innerHTML = '';
   // Show title with whatever scores are in cache for an instant render,
-  // then kick off a background refresh that updates the cache for next time.
+  // then kick off a background refresh that swaps the leaderboard DOM
+  // in place when fresh data arrives. Only updates if we're still on the
+  // title — we don't stomp on a game in progress.
   const cachedScores = getCachedTopScores();
-  fetchTopScores().catch(() => {}); // fire-and-forget, no UI dependency
+  fetchTopScores().then(scores => {
+    if (game.state === STATE.TITLE) refreshLeaderboard(scores);
+  }).catch(() => {});
   await showTitle({ highScore: getHighScore(), topScores: cachedScores });
   startGame();
 }
@@ -527,9 +532,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   updateMuteButton();
   // Show title with whatever scores are in cache for an instant render,
-  // then kick off a background refresh that updates the cache for next time.
+  // then kick off a background refresh that swaps the leaderboard DOM in
+  // place when fresh data arrives. First-time visitors have an empty
+  // cache, so the leaderboard initially says "No scores yet" and updates
+  // a moment later when the API returns.
   const cachedScores = getCachedTopScores();
-  fetchTopScores().catch(() => {}); // fire-and-forget, no UI dependency
+  fetchTopScores().then(scores => {
+    if (game.state === STATE.TITLE) refreshLeaderboard(scores);
+  }).catch(() => {});
   await showTitle({ highScore: getHighScore(), topScores: cachedScores });
   startGame();
 });

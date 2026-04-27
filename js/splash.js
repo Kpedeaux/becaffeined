@@ -423,6 +423,19 @@ export function showBonusQuestion({
   });
 }
 
+/** Replace the leaderboard inside the currently-visible overlay with a
+ *  fresh render. No-op if the overlay is hidden or the element is gone.
+ *  Called by main.js after a background fetchTopScores resolves so the
+ *  title screen updates without requiring a manual refresh. */
+export function refreshLeaderboard(topScores) {
+  const root = overlayEl();
+  if (!root || root.hidden) return;
+  const existing = root.querySelector('.top-scores');
+  if (!existing) return;
+  const fresh = makeTopScoresList(topScores || []);
+  existing.replaceWith(fresh);
+}
+
 /** Renders the global leaderboard as a list. Returns the element to
  *  append. Caller decides where it goes in the layout. Empty list still
  *  renders a heading + placeholder so the section is always visible. */
