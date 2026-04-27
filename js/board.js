@@ -199,27 +199,25 @@ export function shuffleBoard(board, rng = null) {
   movable.forEach((m, i) => {
     grid[m.r][m.c] = { ...grid[m.r][m.c], type: types[i] };
   });
-  // Clear any matches we accidentally created
+  // Clear any matches we accidentally created. Single matches-then-repick
+  // pass per safety iteration — avoids the old nested findMatches() that
+  // was O((rows*cols)^2) and could freeze on pathological boards.
   let next = { ...board, grid };
-  let safety = 0;
-  while (findMatches(next).length > 0 && safety < 20) {
-    // bump a random cell's type until matches go away
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const m = findMatches(next);
-        if (m.length === 0) break;
-        const cell = m[0].cells[0];
-        const piece = next.grid[cell.r][cell.c];
-        if (piece && !piece.special) {
-          const others = TYPES.filter(t => t !== piece.type);
-          const newType = others[Math.floor(rand(rng) * others.length)];
-          const g2 = cloneGrid(next.grid);
-          g2[cell.r][cell.c] = { ...piece, type: newType };
-          next = { ...next, grid: g2 };
-        }
+  for (let safety = 0; safety < 30; safety++) {
+    const matches = findMatches(next);
+    if (matches.length === 0) break;
+    const g2 = cloneGrid(next.grid);
+    for (const m of matches) {
+      // Re-pick a random cell from each match to a different type
+      const cell = m.cells[Math.floor(rand(rng) * m.cells.length)];
+      const piece = g2[cell.r][cell.c];
+      if (piece && !piece.special) {
+        const others = TYPES.filter(t => t !== piece.type);
+        const newType = others[Math.floor(rand(rng) * others.length)];
+        g2[cell.r][cell.c] = { ...piece, type: newType };
       }
     }
-    safety++;
+    next = { ...next, grid: g2 };
   }
   return next;
 }
@@ -332,16 +330,42 @@ function resolveOnce(board, cascadeLevel, swapTarget = null) {
     }
   }
 
-  // Spawn new specials from 4+/5+ matches (only if the cell isn't already
-  // a special being cleared). Place at swap-target preferred.
-  const specialSpawns = [];
+  // Spawn special pieces. First, detect L/T-shaped 5+ matches by finding
+  // cells that appear in BOTH a horizontal AND a vertical match — those
+  // intersections are the corner of an L or center of a T. Spawn AREA
+  // (3x3 bomb) at the intersection. The contributing matches don't get
+  // their own line/color spawn (would double-spawn at the same cell).
+  const cellMatchMap = new Map();
   for (const m of matches) {
+    for (const cell of m.cells) {
+      const k = `${cell.r},${cell.c}`;
+      if (!cellMatchMap.has(k)) cellMatchMap.set(k, []);
+      cellMatchMap.get(k).push(m);
+    }
+  }
+  const matchesAlreadyHandled = new Set();
+  const specialSpawns = [];
+  for (const [k, ms] of cellMatchMap.entries()) {
+    if (ms.length >= 2) {
+      const [r, c] = k.split(',').map(Number);
+      if (activatedSpecials.some(a => a.r === r && a.c === c)) continue;
+      clearKeys.delete(k);
+      specialSpawns.push({
+        position: { r, c },
+        type: ms[0].type,
+        special: SPECIALS.AREA,
+      });
+      ms.forEach(m => matchesAlreadyHandled.add(m));
+    }
+  }
+  // Now handle remaining matches with line/color specials (4+/5+).
+  for (const m of matches) {
+    if (matchesAlreadyHandled.has(m)) continue;
     const sp = pickSpecial(m, swapTarget);
     if (!sp) continue;
-    // Don't overwrite cleared specials with another special
     const key = `${sp.position.r},${sp.position.c}`;
     if (activatedSpecials.some(a => a.r === sp.position.r && a.c === sp.position.c)) continue;
-    clearKeys.delete(key); // protect this cell from being cleared
+    clearKeys.delete(key);
     specialSpawns.push(sp);
   }
 

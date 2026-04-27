@@ -21,6 +21,17 @@ const ART_PATHS = {
   'coffee-bag':  'assets/svg/drink-coffee-bag.svg',
 };
 
+// Human-readable labels for screen readers. Without this, alt text reads
+// as "iced-cr" — a slug — instead of "Iced CR Cold Brew."
+const ART_LABELS = {
+  'iced-cr':     'Iced CR Cold Brew',
+  'streetcar':   'Streetcar Tumbler',
+  'cappuccino':  'CR Cappuccino',
+  'bayou-beast': 'Bayou Beast',
+  'iced-mocha':  'Iced Mocha',
+  'coffee-bag':  'Cold Brew Blend Bag',
+};
+
 const SPECIAL_CLASS = {
   'line-h': 'is-line-h',
   'line-v': 'is-line-v',
@@ -31,14 +42,31 @@ const SPECIAL_CLASS = {
 let cellSize = 56;
 let cellGap = 4;
 
-/** Read the current cell size + gap from CSS vars. Called whenever the board
- *  is (re)mounted or the viewport resizes. */
+/** Read the current cell size + gap. Called whenever the board is
+ *  (re)mounted or the viewport resizes.
+ *
+ *  We CAN'T trust getComputedStyle on --cell-size because some browsers
+ *  return the raw `min(calc(...), 64px)` expression instead of the
+ *  resolved px value, and parseFloat of that returns NaN. So we read the
+ *  actual rendered size off the DOM:
+ *    1. If a piece is already mounted, use its bounding rect (perfect).
+ *    2. Otherwise, derive cell size from the .board element's width.
+ *    3. Final fallback: 56px (won't happen in practice). */
 export function measure(boardEl) {
-  const style = getComputedStyle(boardEl);
-  cellSize = parseFloat(style.getPropertyValue('--cell-size')) ||
-             parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-size')) ||
-             56;
-  cellGap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-gap')) || 4;
+  cellGap = parseFloat(getComputedStyle(document.documentElement)
+              .getPropertyValue('--cell-gap')) || 4;
+  const piece = boardEl.querySelector('.piece');
+  if (piece) {
+    const rect = piece.getBoundingClientRect();
+    if (rect.width > 0) { cellSize = rect.width; return; }
+  }
+  const boardRect = boardEl.getBoundingClientRect();
+  if (boardRect.width > 0) {
+    // .board width = 7*cell + 6*gap → cell = (width - 6*gap) / 7
+    cellSize = (boardRect.width - cellGap * 6) / 7;
+    return;
+  }
+  cellSize = 56;
 }
 
 function px(n) { return `${n}px`; }
@@ -58,7 +86,7 @@ function makePieceEl(piece, r, c) {
   const img = document.createElement('img');
   img.className = 'piece__art';
   img.src = ART_PATHS[piece.type];
-  img.alt = piece.type;
+  img.alt = ART_LABELS[piece.type] || piece.type;
   img.draggable = false;
   el.appendChild(img);
 

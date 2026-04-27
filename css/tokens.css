@@ -79,6 +79,7 @@
   --board-padding: 8px;
   --cell-size: min(
     calc((100vw - var(--side-pad-min) * 2 - var(--board-padding) * 2 - var(--cell-gap) * 6) / 7),
+    calc((100dvh - 300px) / 7),
     64px
   );
 
@@ -106,13 +107,21 @@
   --shadow-board: 0 14px 40px -18px rgba(23, 23, 23, 0.3);
 }
 
-/* Respect user preference */
+/* Respect user preference for reduced motion. Token overrides handle
+   transitions; the blanket rule below disables every keyframe animation
+   (combo-burst, score-float, piece-pop, hint-pulse, special-throb,
+   shake, overlay-in) which previously ignored the token times. */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --t-swap: 1ms;
     --t-fall: 1ms;
     --t-pop: 1ms;
     --t-cascade-step: 1ms;
+  }
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
   }
 }
 

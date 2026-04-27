@@ -24,7 +24,9 @@
 .app-header__inner {
   max-width: 720px;
   margin: 0 auto;
-  padding: 12px var(--space-md);
+  /* padding-top respects the iOS notch / dynamic island safe area so the
+     wordmark never sits behind the camera bump in landscape Pro Max. */
+  padding: max(12px, env(safe-area-inset-top, 0px)) var(--space-md) 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -109,7 +111,11 @@
 /* ----- Footer (persistent CR site link) ----- */
 .app-footer {
   border-top: 1px solid var(--cr-hairline);
-  padding: var(--space-sm) var(--space-md);
+  /* padding-bottom keeps the footer link out from under the Android
+     3-button nav bar / iOS home-indicator strip. */
+  padding: var(--space-sm) var(--space-md)
+           max(var(--space-sm), env(safe-area-inset-bottom, 0px))
+           var(--space-md);
   text-align: center;
   background: var(--cr-cream);
 }
@@ -594,59 +600,6 @@
 }
 
 [hidden] { display: none !important; }
-
-@media (min-width: 600px) {
-  .app-main { padding: var(--space-lg); }
-}
-@media (min-width: 900px) {
-  .overlay__inner { max-width: 640px; }
-}
-
-.piece__art img { image-rendering: -webkit-optimize-contrast; }
-.btn-row {
-  display: flex;
-  gap: var(--space-sm);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.title-marks {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-md);
-}
-.title-marks__divider {
-  width: 1px;
-  height: 32px;
-  background: var(--cr-hairline-2);
-}
-.title-best {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cr-charcoal-2);
-  margin-top: var(--space-md);
-}
-.title-best strong {
-  color: var(--cr-ink);
-  font-weight: 700;
-  margin-left: 8px;
-  font-variant-numeric: tabular-nums;
-}
-
-[hidden] { display: none !important; }
-
-@media (min-width: 600px) {
-  .app-main { padding: var(--space-lg); }
-}
-@media (min-width: 900px) {
-  .overlay__inner { max-width: 640px; }
-}
-
-.piece__art img { image-rendering: -webkit-optimize-contrast; }
 
 @media (min-width: 600px) {
   .app-main { padding: var(--space-lg); }
