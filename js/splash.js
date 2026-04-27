@@ -80,9 +80,9 @@ export function showTitle({ highScore, topScores = [] }) {
       inner.appendChild(best);
     }
 
-    if (topScores && topScores.length > 0) {
-      inner.appendChild(makeTopScoresList(topScores));
-    }
+    // Always render the leaderboard so the player sees what they're chasing,
+    // even on a fresh device or first play of the day.
+    inner.appendChild(makeTopScoresList(topScores || []));
 
     root.appendChild(inner);
   });
