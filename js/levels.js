@@ -144,6 +144,42 @@ export const LEVELS = [
       pull: 'Serving Antique Roasted Coffee.',
     },
   },
+  {
+    id: 9,
+    target: 5500,
+    seconds: 65,
+    bonus: true,
+    pointsMultiplier: 2,
+    splash: {
+      eyebrow: 'Bonus Level Cleared',
+      title: 'Double Points.',
+      subtitle: 'You earned the next round.',
+      photo: 'assets/splash/ig-fresh-batch-pour.jpg',
+      body:
+        'Bonus level nine cleared. Every match in this round was worth ' +
+        'double. One more question stands between you and the final ' +
+        'bonus round.',
+      pull: null,
+    },
+  },
+  {
+    id: 10,
+    target: 7000,
+    seconds: 60,
+    bonus: true,
+    pointsMultiplier: 2,
+    splash: {
+      eyebrow: 'Final Bonus',
+      title: 'Fully Becaffeined.',
+      subtitle: 'The last round is yours.',
+      photo: 'assets/splash/magazine-dusk.jpg',
+      body:
+        'Ten levels deep. Eight facts about CR Coffee Shop, two trivia ' +
+        'gates, and a perfect run of double-point bonus rounds. Now ' +
+        'come visit us in person.',
+      pull: 'Serving Antique Roasted Coffee.',
+    },
+  },
 ];
 
 export const TIME_BONUS_PER_PIECE = 0.4;       // seconds added per cleared piece

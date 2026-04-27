@@ -53,14 +53,16 @@ const STATE = {
 const game = {
   state: STATE.TITLE,
   board: null,
-  level: 0,        // index into LEVELS
+  level: 0,                    // index into LEVELS
   score: 0,
   totalScore: 0,
   timeLeft: 0,
   timerId: null,
   hintTimer: null,
-  busy: false,     // true while a cascade is animating
+  busy: false,                 // true while a cascade is animating
   detachInput: null,
+  usedTriviaIndices: [],       // questions already shown this run
+  bonusLevelsReached: 0,       // how many bonus levels were unlocked
 };
 
 const $ = sel => document.querySelector(sel);
@@ -260,11 +262,15 @@ async function runCascade(events) {
   // Reconcile DOM with engine state after the chain settles
   if (events.length) reconcile(els.board(), events[events.length - 1].nextBoard);
 
-  // Apply state changes after animations so the HUD ticks visibly
+  // Apply state changes after animations so the HUD ticks visibly.
+  // Bonus levels (9, 10) carry pointsMultiplier: 2 — every match worth 2x.
   const finalBoard = events.length ? events[events.length - 1].nextBoard : game.board;
+  const lvl = LEVELS[game.level];
+  const mult = lvl.pointsMultiplier || 1;
+  const earned = pointsEarned * mult;
   game.board = finalBoard;
-  game.score += pointsEarned;
-  game.totalScore += pointsEarned;
+  game.score += earned;
+  game.totalScore += earned;
   game.timeLeft += totalCleared * TIME_BONUS_PER_PIECE;
   updateHUD();
 
@@ -289,11 +295,44 @@ async function advanceLevel() {
   trackLevelComplete(lvl.id, game.score, game.timeLeft);
   await showSplash(lvl.splash, lvl.id, LEVELS.length);
 
-  if (game.level + 1 >= LEVELS.length) {
-    onWin();
-    return;
+  // Trivia gate after Level 8 unlocks bonus Level 9 (2x points)
+  if (lvl.id === 8) {
+    return runBonusGate(0);
   }
+  // Trivia gate after Level 9 unlocks bonus Level 10 (2x points)
+  if (lvl.id === 9) {
+    return runBonusGate(1);
+  }
+  // Cleared the final bonus level
+  if (lvl.id === 10) {
+    return onWin();
+  }
+  // Regular progression
   startLevel(game.level + 1);
+}
+
+/** Trivia gate between regular run and a bonus level.
+ *  bonusIndex 0 = unlock Level 9, bonusIndex 1 = unlock Level 10.
+ *  Correct answer starts the bonus level; wrong answer ends the run with
+ *  current score. */
+async function runBonusGate(bonusIndex) {
+  game.state = STATE.SPLASH;
+  const targetLevelId = 9 + bonusIndex;
+  const result = await showBonusQuestion({
+    eyebrow: bonusIndex === 0 ? 'Bonus Round' : 'Bonus Round Two',
+    title: 'One Question.',
+    subtitle: `Answer correctly to unlock Level ${targetLevelId}. Every match in that round is worth double points.`,
+    score: game.totalScore,
+    excludeIndices: game.usedTriviaIndices,
+  });
+  game.usedTriviaIndices.push(result.questionIndex);
+
+  if (result.correct) {
+    game.bonusLevelsReached = bonusIndex + 1;
+    startLevel(7 + bonusIndex + 1);  // L9 = index 8, L10 = index 9
+  } else {
+    onWin();
+  }
 }
 
 async function onTimeOut() {
@@ -319,26 +358,24 @@ async function onTimeOut() {
 
 async function onWin() {
   game.state = STATE.GAME_OVER;
-  // Bonus for finishing all levels: include leftover time as score
+  // Time-remaining bonus from the last completed level
   game.totalScore += Math.round(game.timeLeft) * 10;
-
-  // Trivia bonus round — one multiple-choice question pulled from the
-  // splash content the player has already seen. Correct answer = +5000.
-  const bonus = await showBonusQuestion();
-  if (bonus > 0) game.totalScore += bonus;
 
   const isNewBest = setHighScore(game.totalScore);
   const high = getHighScore();
-  trackGameOver(game.totalScore, LEVELS.length, true);
+  // The "won" flag now means "cleared at least all 8 base levels."
+  // levelReached tracks the highest level the player actually cleared.
+  const lastClearedId = LEVELS[game.level] ? LEVELS[game.level].id : 8;
+  trackGameOver(game.totalScore, lastClearedId, true);
   if (isNewBest) trackHighScore(high);
   const choice = await showGameOver({
     score: game.totalScore,
     highScore: high,
     isNewBest,
-    levelReached: LEVELS.length,
-    totalLevels: LEVELS.length,
+    levelReached: lastClearedId,
+    totalLevels: 10,
     won: true,
-    bonusEarned: bonus,
+    bonusLevelsReached: game.bonusLevelsReached,
   });
   if (choice === 'replay') startGame();
   else returnToTitle();
@@ -365,6 +402,8 @@ window.addEventListener('blur', () => {
 async function startGame() {
   game.totalScore = 0;
   game.level = 0;
+  game.usedTriviaIndices = [];
+  game.bonusLevelsReached = 0;
   trackGameStart();
   startLevel(0);
 }

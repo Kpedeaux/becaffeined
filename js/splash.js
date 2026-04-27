@@ -155,7 +155,7 @@ export function showSplash(splash, levelNumber, totalLevels) {
 }
 
 /** Game over overlay. Resolves with 'replay' when player chooses to play again. */
-export function showGameOver({ score, highScore, isNewBest, levelReached, totalLevels, won, bonusEarned }) {
+export function showGameOver({ score, highScore, isNewBest, levelReached, totalLevels, won, bonusLevelsReached = 0 }) {
   return new Promise(resolve => {
     clear();
     const root = overlayEl();
@@ -175,8 +175,14 @@ export function showGameOver({ score, highScore, isNewBest, levelReached, totalL
 
     const sub = document.createElement('p');
     sub.className = 'overlay__subtitle';
+    let wonMsg = 'You cleared all eight levels. Time for a real cup at any of our four locations.';
+    if (bonusLevelsReached === 1) {
+      wonMsg = 'You cleared all eight levels and the first bonus round. Come visit us in person.';
+    } else if (bonusLevelsReached >= 2) {
+      wonMsg = 'Fully Becaffeined. Ten levels, two trivia gates, all double points. Time for a real cup.';
+    }
     sub.textContent = won
-      ? 'You cleared all eight levels. Time for a real cup at any of our four locations.'
+      ? wonMsg
       : `You reached level ${levelReached} of ${totalLevels}. Try again?`;
     inner.appendChild(sub);
 
@@ -194,13 +200,10 @@ export function showGameOver({ score, highScore, isNewBest, levelReached, totalL
     `;
     inner.appendChild(stat);
 
-    if (typeof bonusEarned === 'number' && bonusEarned > 0) {
+    if (bonusLevelsReached > 0) {
       const bonusLine = document.createElement('p');
       bonusLine.className = 'title-best';
-      const isCorrect = bonusEarned >= 5000;
-      bonusLine.innerHTML = isCorrect
-        ? `Bonus answer correct <strong>+${bonusEarned.toLocaleString()}</strong>`
-        : `Bonus attempt <strong>+${bonusEarned.toLocaleString()}</strong>`;
+      bonusLine.innerHTML = `Bonus Levels Cleared <strong>${bonusLevelsReached}</strong>`;
       inner.appendChild(bonusLine);
     }
 
@@ -305,29 +308,53 @@ const TRIVIA = [
   },
 ];
 
-export function showBonusQuestion() {
+export function showBonusQuestion({
+  eyebrow = 'Bonus Round',
+  title = 'One Question.',
+  subtitle = 'Answer correctly to unlock the next round.',
+  score = null,
+  excludeIndices = [],
+} = {}) {
   return new Promise(resolve => {
     clear();
     const root = overlayEl();
     const inner = document.createElement('div');
     inner.className = 'overlay__inner';
 
-    const trivia = TRIVIA[Math.floor(Math.random() * TRIVIA.length)];
+    // Pick a random question that hasn't been used yet
+    const available = TRIVIA
+      .map((_, i) => i)
+      .filter(i => !excludeIndices.includes(i));
+    const questionIndex = available[Math.floor(Math.random() * available.length)];
+    const trivia = TRIVIA[questionIndex];
 
-    const eyebrow = document.createElement('p');
-    eyebrow.className = 'overlay__eyebrow';
-    eyebrow.textContent = 'Bonus Round';
-    inner.appendChild(eyebrow);
+    const eyebrowEl = document.createElement('p');
+    eyebrowEl.className = 'overlay__eyebrow';
+    eyebrowEl.textContent = eyebrow;
+    inner.appendChild(eyebrowEl);
 
-    const title = document.createElement('h2');
-    title.className = 'overlay__title';
-    title.textContent = 'One Question.';
-    inner.appendChild(title);
+    const titleEl = document.createElement('h2');
+    titleEl.className = 'overlay__title';
+    titleEl.textContent = title;
+    inner.appendChild(titleEl);
 
-    const sub = document.createElement('p');
-    sub.className = 'overlay__subtitle';
-    sub.textContent = 'Answer correctly for 5,000 bonus points.';
-    inner.appendChild(sub);
+    const subEl = document.createElement('p');
+    subEl.className = 'overlay__subtitle';
+    subEl.textContent = subtitle;
+    inner.appendChild(subEl);
+
+    // Show running score if provided — doubles as the score-reveal screen
+    if (typeof score === 'number') {
+      const stat = document.createElement('div');
+      stat.className = 'overlay__stat';
+      stat.innerHTML = `
+        <div class="overlay__stat-cell">
+          <strong>${score.toLocaleString()}</strong>
+          <span>Score So Far</span>
+        </div>
+      `;
+      inner.appendChild(stat);
+    }
 
     const question = document.createElement('p');
     question.className = 'overlay__body';
@@ -347,17 +374,15 @@ export function showBonusQuestion() {
         answered = true;
         const correct = i === trivia.correct;
         btn.classList.add(correct ? 'is-correct' : 'is-wrong');
-        // Reveal the right answer if they got it wrong
         if (!correct) {
           const right = choices.children[trivia.correct];
           if (right) right.classList.add('is-correct');
         }
-        // Disable all buttons
         for (const b of choices.children) b.disabled = true;
         setTimeout(() => {
           hide();
-          resolve(correct ? 5000 : 500);
-        }, 1600);
+          resolve({ correct, questionIndex });
+        }, 1700);
       }, { once: true });
       choices.appendChild(btn);
     });
