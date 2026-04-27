@@ -16,7 +16,7 @@ import { TYPES } from './board.js';
 // every art URL so browsers see a "different" file and fetch the new one
 // instead of serving the old version from disk cache. Without this, the
 // 1-year immutable cache header on /assets/* keeps stale art around.
-const ART_VERSION = '15';
+const ART_VERSION = '16';
 const ART_PATHS = {
   'iced-cr':     `assets/svg/drink-iced-cr.svg?v=${ART_VERSION}`,
   'streetcar':   `assets/svg/drink-streetcar.svg?v=${ART_VERSION}`,
@@ -27,9 +27,10 @@ const ART_PATHS = {
 };
 
 // Human-readable labels for screen readers. Without this, alt text reads
-// as "iced-cr" — a slug — instead of "Iced CR Cold Brew."
+// as "iced-cr" — a slug — instead of "CR Coffee paper cup." Slug stays
+// 'iced-cr' for backwards compatibility with saved boards / engine logic.
 const ART_LABELS = {
-  'iced-cr':     'Iced CR Cold Brew',
+  'iced-cr':     'CR Coffee paper cup',
   'streetcar':   'Streetcar Tumbler',
   'cappuccino':  'CR Cappuccino',
   'bayou-beast': 'Bayou Beast',
@@ -183,7 +184,7 @@ export function spawnComboBanner(boardEl, text) {
 // Particles match the drink's dominant color so the burst feels connected
 // to what was just cleared.
 const PIECE_COLORS = {
-  'iced-cr':     '#C68B4B',
+  'iced-cr':     '#2a2a2a',
   'streetcar':   '#A52639',
   'cappuccino':  '#E6C9A5',
   'bayou-beast': '#4FB36A',

@@ -26,7 +26,7 @@
   /* ----- Game-specific accents -----
      One color per drink piece, used for glow/match-burst effects.
      Each is pulled from the dominant color of its illustration. */
-  --piece-iced-cr:        #C68B4B;   /* warm caramel swirl */
+  --piece-iced-cr:        #2a2a2a;   /* CR paper cup sleeve */
   --piece-streetcar:      #7E1E2A;   /* deep oxblood from glass + lid */
   --piece-cappuccino:     #E6C9A5;   /* foam cream */
   --piece-bayou-beast:    #4FB36A;   /* signature green */
