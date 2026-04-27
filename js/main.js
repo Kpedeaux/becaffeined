@@ -24,7 +24,7 @@ import {
 } from './render.js';
 import { attachInput } from './input.js';
 import {
-  sfxSwap, sfxIllegal, sfxMatch, sfxBigCombo, sfxSpecial,
+  sfxSwap, sfxIllegal, sfxMatch, sfxBigCombo, sfxSpecial, sfxPowerupActivate,
   sfxLevelUp, sfxGameOver, sfxTick,
   unlockOnGesture, isMuted, toggleMute,
 } from './audio.js';
@@ -255,6 +255,11 @@ async function runCascade(events) {
           'and the star clears every drink of one type.'
         );
       }
+    }
+    // POWERUP ACTIVATION: if any specials are firing this cascade, drop
+    // a much bigger sound + visual so the player feels the explosion.
+    if (ev.activatedSpecials && ev.activatedSpecials.length > 0) {
+      sfxPowerupActivate();
     }
     await animateCascade(els.board(), els.boardFrame(), ev);
   }

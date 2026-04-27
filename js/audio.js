@@ -425,6 +425,63 @@ export function sfxSpecial() {
   }
 }
 
+/** Dedicated powerup-ACTIVATION sound. Fires when a player matches
+ *  three drinks including a glowing special piece. This is bigger and
+ *  punchier than sfxSpecial (which fires on powerup CREATION). Layered:
+ *   - Sub-bass thud (the "BOOM")
+ *   - Wide noise crackle (debris)
+ *   - Bell sparkle (the prize moment)
+ *   - Brief grinder rumble (body / weight) */
+export function sfxPowerupActivate() {
+  if (!ensureCtx() || muted) return;
+  resume();
+
+  // 1. Sub-bass thud — a low sine that drops fast, gives the punch
+  pluck({
+    freq: 90, type: 'sine', duration: 0.18, peak: 0.55,
+    glideTo: 38, glideTime: 0.14,
+    dry: 1, wet: 0.35,
+  });
+
+  // 2. Mid thud overlay (triangle for warmth)
+  pluck({
+    freq: 220, type: 'triangle', duration: 0.16, peak: 0.30,
+    glideTo: 80, glideTime: 0.13,
+    dry: 0.9, wet: 0.4,
+  });
+
+  // 3. Wide noise crackle — debris / energy release
+  noise({
+    duration: 0.32, peak: 0.32,
+    filterType: 'bandpass', freq: 1500, q: 0.5, freqEnd: 350,
+    attack: 0.001, dry: 0.7, wet: 0.55,
+  });
+
+  // 4. Bright bell sparkle on top — the reward feel
+  setTimeout(() => bellDing(1.5), 60);
+
+  // 5. Short grinder rumble underneath for weight
+  setTimeout(() => {
+    const t = ctx.currentTime;
+    const dur = 0.30;
+    const src = ctx.createBufferSource();
+    src.buffer = brownNoiseBuffer(ctx, dur);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 480;
+    lp.Q.value = 0.6;
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0, t);
+    env.gain.linearRampToValueAtTime(0.35, t + 0.01);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(lp); lp.connect(env);
+    const buses = busSend(0.85, 0.45);
+    env.connect(buses.dry); env.connect(buses.wet);
+    src.start(t); src.stop(t + dur);
+  }, 20);
+}
+
+
 export function sfxLevelUp() {
   bellDing(1.15);
   setTimeout(() => noise({

@@ -230,6 +230,52 @@ export function spawnTileFlash(boardEl, r, c) {
   setTimeout(() => flash.remove(), 240);
 }
 
+
+/** Big radial explosion at a board cell — used when a powerup activates.
+ *  Layered: a flashing ring, 28 large fast particles flying outward, and
+ *  a brief "BOOM!" label. Scales bigger than a regular match burst so
+ *  there's no question something dramatic happened. */
+export function spawnExplosion(boardEl, r, c, label = 'BOOM!') {
+  const cx = xFor(c) + cellSize / 2;
+  const cy = yFor(r) + cellSize / 2;
+
+  // 1. Radial ring flash — a circle that grows and fades out
+  const ring = document.createElement('div');
+  ring.className = 'explosion-ring';
+  ring.style.setProperty('--cx', px(cx));
+  ring.style.setProperty('--cy', px(cy));
+  ring.style.setProperty('--ring-size', px(cellSize * 4.5));
+  boardEl.appendChild(ring);
+  setTimeout(() => ring.remove(), 600);
+
+  // 2. Big particles — 28, longer travel distance, bigger size
+  const count = 28;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + (Math.random() * 0.3 - 0.15);
+    const dist = cellSize * (1.2 + Math.random() * 1.0);
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    const p = document.createElement('div');
+    p.className = 'burst burst--big';
+    p.style.setProperty('--cx', px(cx));
+    p.style.setProperty('--cy', px(cy));
+    p.style.setProperty('--dx', px(dx));
+    p.style.setProperty('--dy', px(dy));
+    p.style.setProperty('--burst-color', '#A52639');
+    boardEl.appendChild(p);
+    setTimeout(() => p.remove(), 800);
+  }
+
+  // 3. "BOOM!" label centered on the activation point
+  const lbl = document.createElement('div');
+  lbl.className = 'explosion-label';
+  lbl.style.setProperty('--cx', px(cx));
+  lbl.style.setProperty('--cy', px(cy));
+  lbl.textContent = label;
+  boardEl.appendChild(lbl);
+  setTimeout(() => lbl.remove(), 700);
+}
+
 /** Brief full-viewport flash overlay. Used at cascade 3+ for that
  *  "screen wash" feel that big match-3 games use to signal a big move. */
 export function spawnScreenFlash(intensity = 1.0) {
@@ -293,6 +339,23 @@ export async function animateCascade(boardEl, frameEl, event) {
     const type = el ? el.dataset.type : null;
     spawnTileFlash(boardEl, r, c);
     spawnBurst(boardEl, r, c, type, event.cascadeLevel);
+  }
+
+  // Big explosion at every powerup activation point + screen shake +
+  // forced flash. This is the "something special is happening" moment.
+  if (event.activatedSpecials && event.activatedSpecials.length > 0) {
+    for (const a of event.activatedSpecials) {
+      // Pick a label based on the type of special, if we can read it
+      const el = pieceAt(boardEl, a.r, a.c);
+      const cls = el ? el.className : '';
+      let label = 'BOOM!';
+      if (cls.includes('is-color')) label = 'BLAST!';
+      else if (cls.includes('is-area')) label = 'KABOOM!';
+      else if (cls.includes('is-line')) label = 'WHOOSH!';
+      spawnExplosion(boardEl, a.r, a.c, label);
+    }
+    spawnScreenFlash(0.9);
+    shake(frameEl);
   }
 
   // Score popups (one per match center)
