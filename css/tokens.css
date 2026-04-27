@@ -61,14 +61,26 @@
   --space-xl: 3rem;
   --space-2xl: 4rem;
 
-  /* ----- Game tokens ----- */
-  --board-cols: 8;
-  --board-rows: 8;
-  /* Bigger tiles: was clamp(36, 11vw, 64). On a 390px iPhone this moved from
-     ~43px to ~51px per tile — ~18% larger and much easier to read. */
-  --cell-size: clamp(40px, 10.4vw, 72px);
+  /* ----- Game tokens -----
+     7x7 grid is the mobile-first sweet spot.
+
+     Cell size is COMPUTED from the actual viewport width so the board can
+     mathematically never overflow the screen — no matter the device. The
+     formula reserves:
+        2 × 22px  side padding (Android system back-gesture zone)
+        2 × 8px   board frame internal padding
+        6 × 4px   gaps between the 7 cells in a row
+     and divides what's left by 7. Capped at 64px so it doesn't get absurd
+     on tablets. */
+  --board-cols: 7;
+  --board-rows: 7;
+  --side-pad-min: 22px;
   --cell-gap: 4px;
   --board-padding: 8px;
+  --cell-size: min(
+    calc((100vw - var(--side-pad-min) * 2 - var(--board-padding) * 2 - var(--cell-gap) * 6) / 7),
+    64px
+  );
 
   /* Animation durations */
   --t-swap: 220ms;
@@ -115,7 +127,7 @@ body {
   min-height: 100dvh;
   /* Block iOS / Android edge-swipe back/forward navigation. The combination
      of overscroll-behavior:none + overscroll-behavior-x:contain prevents
-     the browser from claiming the gesture before our handler does. */
+     the browser from claiming horizontal gestures before our handler does. */
   overscroll-behavior: none;
   overscroll-behavior-x: contain;
   -webkit-user-select: none;

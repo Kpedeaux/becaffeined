@@ -83,10 +83,15 @@
 }
 
 /* ----- Main play area -----
-   Side padding accounts for both iOS safe-area insets (notch / dynamic
-   island side bars) and the ~16-22px edge-swipe "back/forward" hot zone
-   that all mobile browsers reserve. We pad more aggressively on the
-   sides than vertically so the board never lands at the screen edge. */
+   Side padding has to keep the board out of the Android system back-gesture
+   zone (~16-24px from each edge, intercepted at the OS level before Chrome
+   sees the touch) AND the iOS safe-area inset. Bumped to 28px minimum on
+   both sides — empirically the smallest value where back/forward swipes
+   stop firing across Pixel and recent Samsung devices.
+
+   touch-action: pan-y here means: vertical page scroll allowed, horizontal
+   swipes blocked. The browser stops trying to claim sideways gestures for
+   navigation. */
 .app-main {
   flex: 1;
   display: flex;
@@ -95,9 +100,10 @@
   justify-content: flex-start;
   padding-top: var(--space-md);
   padding-bottom: var(--space-md);
-  padding-left: max(env(safe-area-inset-left, 0px), 22px);
-  padding-right: max(env(safe-area-inset-right, 0px), 22px);
+  padding-left: max(env(safe-area-inset-left, 0px), var(--side-pad-min));
+  padding-right: max(env(safe-area-inset-right, 0px), var(--side-pad-min));
   gap: var(--space-md);
+  touch-action: pan-y;
 }
 
 /* ----- Footer (persistent CR site link) ----- */
@@ -185,6 +191,9 @@
   touch-action: none;
   -webkit-touch-callout: none;
   overscroll-behavior: contain;
+  /* Defensive: even if the calc above mis-rounds by a fraction of a pixel
+     on some browser, this stops the frame from ever exceeding viewport. */
+  max-width: 100%;
 }
 .board {
   position: relative;
@@ -206,9 +215,13 @@
   align-items: center;
   justify-content: center;
 }
+/* Drinks fill more of each cell. The SVG viewBox is 200x200 with the actual
+   glassware occupying ~88x140 — a 13% upscale crops out the empty
+   whitespace around the drink without redrawing the SVGs. */
 .piece__art {
-  width: 100%;
-  height: 100%;
+  width: 113%;
+  height: 113%;
+  margin: -6.5%;
   pointer-events: none;
   filter: drop-shadow(0 2px 3px rgba(23, 23, 23, 0.12));
   transition: transform 0.18s var(--ease-snap);
@@ -506,17 +519,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Hidden state */
 [hidden] { display: none !important; }
 
-/* ----- Responsive ----- */
 @media (min-width: 600px) {
-  :root { --cell-size: clamp(48px, 7vw, 64px); }
   .app-main { padding: var(--space-lg); }
 }
 @media (min-width: 900px) {
   .overlay__inner { max-width: 640px; }
 }
 
-/* High-DPI sharper SVG */
 .piece__art img { image-rendering: -webkit-optimize-contrast; }

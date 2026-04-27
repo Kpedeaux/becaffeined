@@ -12,7 +12,7 @@
 export const LEVELS = [
   {
     id: 1,
-    target: 1000,
+    target: 800,
     seconds: 90,
     splash: {
       eyebrow: 'New Orleans · Est. 2015',
@@ -28,7 +28,7 @@ export const LEVELS = [
   },
   {
     id: 2,
-    target: 1500,
+    target: 1200,
     seconds: 90,
     splash: {
       eyebrow: 'Our Coffee',
@@ -45,7 +45,7 @@ export const LEVELS = [
   },
   {
     id: 3,
-    target: 2000,
+    target: 1600,
     seconds: 80,
     splash: {
       eyebrow: 'Magazine Street',
@@ -61,7 +61,7 @@ export const LEVELS = [
   },
   {
     id: 4,
-    target: 2500,
+    target: 2000,
     seconds: 80,
     splash: {
       eyebrow: 'Sourcing',
@@ -78,7 +78,7 @@ export const LEVELS = [
   },
   {
     id: 5,
-    target: 3000,
+    target: 2400,
     seconds: 75,
     splash: {
       eyebrow: 'The Crescent Room',
@@ -95,7 +95,7 @@ export const LEVELS = [
   },
   {
     id: 6,
-    target: 3500,
+    target: 2800,
     seconds: 75,
     splash: {
       eyebrow: 'The Blends',
@@ -111,7 +111,7 @@ export const LEVELS = [
   },
   {
     id: 7,
-    target: 4000,
+    target: 3200,
     seconds: 70,
     splash: {
       eyebrow: 'Behind the Counter',
@@ -128,7 +128,7 @@ export const LEVELS = [
   },
   {
     id: 8,
-    target: 5000,
+    target: 4000,
     seconds: 70,
     splash: {
       eyebrow: 'Final Round',

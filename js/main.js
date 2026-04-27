@@ -154,7 +154,7 @@ async function startLevel(idx) {
   const lvl = LEVELS[idx];
   game.timeLeft = lvl.seconds;
   game.busy = false;
-  game.board = createBoard(8, 8);
+  game.board = createBoard(7, 7);
   game.state = STATE.PLAYING;
 
   measure(els.board());
