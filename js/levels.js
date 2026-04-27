@@ -151,14 +151,14 @@ export const LEVELS = [
     bonus: true,
     pointsMultiplier: 2,
     splash: {
-      eyebrow: 'Bonus Level Cleared',
-      title: 'Double Points.',
-      subtitle: 'You earned the next round.',
-      photo: 'assets/splash/ig-fresh-batch-pour.jpg',
+      eyebrow: 'Bonus Level Nine Cleared',
+      title: 'Double Points Earned.',
+      subtitle: 'One more round at double points is waiting.',
+      photo: 'assets/splash/fresh-pour.jpg',
       body:
-        'Bonus level nine cleared. Every match in this round was worth ' +
-        'double. One more question stands between you and the final ' +
-        'bonus round.',
+        'You doubled every match in level nine. The final bonus round ' +
+        'pays double too. One question stands between you and Level Ten. ' +
+        'Get it right.',
       pull: null,
     },
   },

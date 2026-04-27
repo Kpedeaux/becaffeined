@@ -323,10 +323,25 @@ async function advanceLevel() {
 async function runBonusGate(bonusIndex) {
   game.state = STATE.SPLASH;
   const targetLevelId = 9 + bonusIndex;
+
+  // Gate 1 (after L8): casual prompt to unlock the first bonus round.
+  // Gate 2 (after L9): higher stakes — the final bonus round, all 2x.
+  const config = bonusIndex === 0
+    ? {
+        eyebrow: 'Bonus Round',
+        title: 'One Question.',
+        subtitle: 'Answer correctly to unlock Level 9. Every match in that round is worth double points.',
+      }
+    : {
+        eyebrow: 'Final Bonus Round',
+        title: 'Last Question.',
+        subtitle: 'Get this one and the final round opens up. Level 10 pays double too. Make it count.',
+      };
+
   const result = await showBonusQuestion({
-    eyebrow: bonusIndex === 0 ? 'Bonus Round' : 'Bonus Round Two',
-    title: 'One Question.',
-    subtitle: `Answer correctly to unlock Level ${targetLevelId}. Every match in that round is worth double points.`,
+    eyebrow: config.eyebrow,
+    title: config.title,
+    subtitle: config.subtitle,
     score: game.totalScore,
     excludeIndices: game.usedTriviaIndices,
   });
