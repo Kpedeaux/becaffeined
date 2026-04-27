@@ -179,6 +179,38 @@ function brownNoiseBuffer(audioCtx, duration) {
   return buf;
 }
 
+/** Brief grinder-rasp sound — one quick rip of beans through burrs.
+ *  Layered brown-noise rumble + resonant bandpass sweep + sawtooth grit.
+ *  Used standalone for matches and as the rumble layer for big combos. */
+function grindRip(pitch = 1.0, duration = 0.12) {
+  if (!ensureCtx() || muted) return;
+  resume();
+  const t = ctx.currentTime;
+  const src = ctx.createBufferSource();
+  src.buffer = brownNoiseBuffer(ctx, duration);
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.setValueAtTime(700 * pitch, t);
+  bp.frequency.exponentialRampToValueAtTime(1400 * pitch, t + duration * 0.7);
+  bp.Q.value = 4;
+  const saw = ctx.createOscillator();
+  saw.type = 'sawtooth';
+  saw.frequency.setValueAtTime(120 * pitch, t);
+  saw.frequency.exponentialRampToValueAtTime(220 * pitch, t + duration * 0.7);
+  const sawGain = ctx.createGain();
+  sawGain.gain.value = 0.08;
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(0.32, t + 0.005);
+  env.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+  src.connect(bp); bp.connect(env);
+  saw.connect(sawGain); sawGain.connect(env);
+  const buses = busSend(0.85, 0.4);
+  env.connect(buses.dry); env.connect(buses.wet);
+  src.start(t); saw.start(t);
+  src.stop(t + duration); saw.stop(t + duration);
+}
+
 /* ==========================================================================
  * Public SFX
  * ========================================================================== */
@@ -205,16 +237,25 @@ export function sfxIllegal() {
   });
 }
 
-export function sfxMatch(cascadeLevel = 1) {
-  const pitch = 1 + (cascadeLevel - 1) * 0.18;
-  drip(pitch);
-  noise({
-    duration: 0.09, peak: 0.10,
-    filterType: 'bandpass', freq: 2400 * pitch, q: 1.6,
-    attack: 0.001, dry: 0.45, wet: 0.55,
-  });
+export function sfxMatch(cascadeLevel = 1, matchLength = 3) {
+  // Match = grinder rip. Pitch climbs with cascade level so chains feel
+  // satisfying. Longer matches get a brighter "bean crack" snap on top.
+  const pitch = 1 + (cascadeLevel - 1) * 0.20;
+  const dur = 0.10 + Math.min(cascadeLevel - 1, 3) * 0.025;
+  grindRip(pitch, dur);
+  // Bean-crack snap (high sine descending click) for any match
+  setTimeout(() => pluck({
+    freq: 2200 * pitch, type: 'sine', duration: 0.05, peak: 0.18,
+    glideTo: 1100 * pitch, glideTime: 0.045,
+    dry: 0.6, wet: 0.4,
+  }), 8);
+  // Match-4+ get an extra grind echo
+  if (matchLength >= 4) {
+    setTimeout(() => grindRip(pitch * 1.18, dur * 0.85), 75);
+  }
+  // Cascade chain reward — bell ding from level 2 onward
   if (cascadeLevel >= 2) {
-    setTimeout(() => drip(pitch * 1.18), 70);
+    setTimeout(() => bellDing(0.85 + cascadeLevel * 0.06), 110);
   }
 }
 
@@ -246,36 +287,62 @@ export function sfxBigCombo() {
   if (!ensureCtx() || muted) return;
   resume();
   const t = ctx.currentTime;
-  const dur = 0.46;
-  const src = ctx.createBufferSource();
-  src.buffer = brownNoiseBuffer(ctx, dur);
-  const lp = ctx.createBiquadFilter();
-  lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = 0.5;
-  const saw = ctx.createOscillator();
-  saw.type = 'sawtooth'; saw.frequency.value = 70;
-  const sawGain = ctx.createGain();
-  sawGain.gain.value = 0.10;
-  const lfo = ctx.createOscillator();
-  lfo.frequency.value = 9;
-  const lfoGain = ctx.createGain();
-  lfoGain.gain.value = 0.18;
-  const trem = ctx.createGain();
-  trem.gain.value = 0.32;
-  lfo.connect(lfoGain);
-  lfoGain.connect(trem.gain);
-  const env = ctx.createGain();
-  env.gain.setValueAtTime(0, t);
-  env.gain.linearRampToValueAtTime(0.5, t + 0.04);
-  env.gain.linearRampToValueAtTime(0.0001, t + dur);
-  src.connect(lp); lp.connect(trem);
-  saw.connect(sawGain); sawGain.connect(trem);
-  trem.connect(env);
-  const buses = busSend(0.85, 0.4);
-  env.connect(buses.dry);
-  env.connect(buses.wet);
-  src.start(t); saw.start(t); lfo.start(t);
-  src.stop(t + dur); saw.stop(t + dur); lfo.stop(t + dur);
-  setTimeout(() => bellDing(1.0), 240);
+
+  // Layer 1: anticipation — steam hiss building from low to high
+  noise({
+    duration: 0.45, peak: 0.22,
+    filterType: 'bandpass', freq: 2400, q: 0.9, freqEnd: 7000,
+    attack: 0.06, dry: 0.5, wet: 0.7,
+  });
+
+  // Layer 2: power — long grinder rumble with tremolo, fires after the
+  // steam build so the dynamics climb rather than blur.
+  setTimeout(() => {
+    const dur = 0.50;
+    const src = ctx.createBufferSource();
+    src.buffer = brownNoiseBuffer(ctx, dur);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    const t2 = ctx.currentTime;
+    lp.frequency.setValueAtTime(600, t2);
+    lp.frequency.exponentialRampToValueAtTime(1600, t2 + dur * 0.6);
+    lp.Q.value = 0.7;
+    const saw = ctx.createOscillator();
+    saw.type = 'sawtooth';
+    saw.frequency.value = 65;
+    const sawGain = ctx.createGain();
+    sawGain.gain.value = 0.15;
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 11;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 0.22;
+    const trem = ctx.createGain();
+    trem.gain.value = 0.4;
+    lfo.connect(lfoGain); lfoGain.connect(trem.gain);
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0, t2);
+    env.gain.linearRampToValueAtTime(0.55, t2 + 0.04);
+    env.gain.linearRampToValueAtTime(0.0001, t2 + dur);
+    src.connect(lp); lp.connect(trem);
+    saw.connect(sawGain); sawGain.connect(trem);
+    trem.connect(env);
+    const buses = busSend(0.85, 0.45);
+    env.connect(buses.dry); env.connect(buses.wet);
+    src.start(t2); saw.start(t2); lfo.start(t2);
+    src.stop(t2 + dur); saw.stop(t2 + dur); lfo.stop(t2 + dur);
+  }, 100);
+
+  // Layer 3: payoff — ascending triple bell sparkle on top of the rumble
+  setTimeout(() => bellDing(1.0), 320);
+  setTimeout(() => bellDing(1.4), 440);
+  setTimeout(() => bellDing(1.9), 540);
+
+  // Layer 4: final release — steam pop airs out the energy
+  setTimeout(() => noise({
+    duration: 0.18, peak: 0.20,
+    filterType: 'highpass', freq: 4800, q: 0.7,
+    attack: 0.005, dry: 0.55, wet: 0.6,
+  }), 600);
 }
 
 export function sfxSpecial() {

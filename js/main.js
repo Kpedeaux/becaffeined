@@ -230,7 +230,10 @@ async function runCascade(events) {
     totalCleared += ev.cleared.length;
     pointsEarned += ev.scoreDelta;
     highestCascade = Math.max(highestCascade, ev.cascadeLevel);
-    sfxMatch(ev.cascadeLevel);
+    // Pass the longest match length so sfxMatch can layer in the extra
+    // grind echo for match-4 and match-5 specials.
+    const longestMatch = ev.matches.reduce((m, x) => Math.max(m, x.length), 3);
+    sfxMatch(ev.cascadeLevel, longestMatch);
     if (ev.specialSpawns.length > 0) sfxSpecial();
   }
 
@@ -380,19 +383,21 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (game.state === STATE.PLAYING) togglePause();
   });
 
-  // Resize → re-measure cell sizes and re-position pieces
+  // Resize → re-measure cell sizes and re-position pieces. Skip while a
+  // cascade is animating — re-mounting mid-cascade was the root cause of
+  // the rare empty-cell glitch the user reported.
   let resizeTimer = null;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      if (game.board) {
+      if (game.board && !game.busy) {
         measure(els.board());
         mount(els.board(), game.board);
       }
-    }, 150);
+    }, 200);
   });
 
-   updateMuteButton();
+  updateMuteButton();
   await showTitle({ highScore: getHighScore() });
   startGame();
 });
