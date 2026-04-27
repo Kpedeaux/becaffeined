@@ -334,40 +334,42 @@
   50%      { filter: drop-shadow(0 0 14px rgba(165, 38, 57, 0.9)); }
 }
 
-/* Special piece overlays — applied in addition to the drink art */
+/* Powerup overlays. Each special piece type gets a clear icon ON the piece
+   so the player understands it's a tool, not a stuck UI element.
+     line-h  →  horizontal double-arrow ⇆  (clears its row when matched)
+     line-v  →  vertical double-arrow ⇅    (clears its column when matched)
+     area    →  starburst ✸                 (clears a 3x3 area when matched)
+     color   →  star ★                      (clears every drink of one type)
+   The icon sits over a soft red wash so it reads as "powered up." */
 .piece.is-line-h::before,
-.piece.is-line-v::before {
-  content: '';
-  position: absolute;
-  inset: 12% 6%;
-  border: 2px solid var(--cr-red);
-  background: rgba(165, 38, 57, 0.08);
-  pointer-events: none;
-  animation: special-throb 1.4s ease-in-out infinite;
-}
-.piece.is-line-v::before { inset: 6% 12%; }
-.piece.is-area::before {
-  content: '';
-  position: absolute;
-  inset: 8%;
-  border: 2px solid var(--cr-red);
-  background: rgba(165, 38, 57, 0.12);
-  pointer-events: none;
-  animation: special-throb 1.2s ease-in-out infinite;
-}
+.piece.is-line-v::before,
+.piece.is-area::before,
 .piece.is-color::before {
-  content: '★';
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(var(--cell-size) * 0.5);
+  font-family: 'Inter', sans-serif;
+  font-size: calc(var(--cell-size) * 0.55);
+  font-weight: 900;
   color: var(--cr-red);
-  text-shadow: 0 0 12px rgba(165, 38, 57, 0.8);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(165, 38, 57, 0.22),
+    rgba(165, 38, 57, 0) 70%
+  );
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, 0.95),
+    0 0 10px rgba(255, 255, 255, 0.85),
+    0 0 16px rgba(165, 38, 57, 0.8);
   pointer-events: none;
-  animation: special-throb 0.9s ease-in-out infinite;
+  animation: special-throb 1.0s ease-in-out infinite;
 }
+.piece.is-line-h::before { content: '⇆'; }
+.piece.is-line-v::before { content: '⇅'; }
+.piece.is-area::before   { content: '✸'; }
+.piece.is-color::before  { content: '★'; }
 @keyframes special-throb {
   0%, 100% { opacity: 0.5; transform: scale(0.96); }
   50%      { opacity: 1.0; transform: scale(1.10); }
@@ -738,4 +740,41 @@
   color: var(--cr-cream);
   opacity: 1;
 }
+
+
+/* ----- Powerup tutorial toast — shown once per device the first time a
+   powerup spawns. Tells the player what the red-glowing piece does. */
+.tutorial-toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(env(safe-area-inset-bottom, 0px), 90px);
+  transform: translateX(-50%);
+  z-index: 30;
+  max-width: min(360px, calc(100vw - 40px));
+  padding: 14px 18px;
+  background: var(--cr-charcoal);
+  color: var(--cr-cream);
+  border: 1px solid var(--cr-red);
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.45);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  text-align: center;
+  pointer-events: auto;
+  animation: toast-in 240ms var(--ease-snap),
+             toast-out 320ms ease-out 5500ms forwards;
+}
+.tutorial-toast strong {
+  color: var(--cr-red-soft, #C9485B);
+  font-weight: 700;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translate(-50%, 0); }
+  to   { opacity: 0; transform: translate(-50%, 12px); }
+}
+
 .piece__art img { image-rendering: -webkit-optimize-contrast; }

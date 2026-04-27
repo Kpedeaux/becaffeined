@@ -235,6 +235,18 @@ export function spawnScreenFlash(intensity = 1.0) {
   setTimeout(() => fl.remove(), 350);
 }
 
+
+/** One-time tutorial toast at the bottom of the viewport. Self-removes
+ *  after the CSS animation completes. The caller is responsible for
+ *  deciding whether to show it (e.g. tracking via storage.js). */
+export function showToast(message) {
+  const t = document.createElement('div');
+  t.className = 'tutorial-toast';
+  t.innerHTML = message;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 6000);
+}
+
 /** Briefly shake the board frame element. */
 export function shake(frameEl) {
   frameEl.classList.remove('shake');

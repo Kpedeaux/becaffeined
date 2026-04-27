@@ -20,7 +20,7 @@ import {
 } from './board.js';
 import {
   mount, animateSwap, animateCascade, animateCascades, reconcile,
-  setSelected, clearSelected, setHint, clearHint, measure,
+  setSelected, clearSelected, setHint, clearHint, measure, showToast,
 } from './render.js';
 import { attachInput } from './input.js';
 import {
@@ -35,7 +35,7 @@ import {
   LEVELS, TIME_BONUS_PER_PIECE, TIME_WARN_THRESHOLD, HINT_DELAY_MS,
 } from './levels.js';
 import {
-  getHighScore, setHighScore,
+  getHighScore, setHighScore, load, save,
 } from './storage.js';
 import {
   trackGameStart, trackLevelStart, trackLevelComplete,
@@ -240,7 +240,20 @@ async function runCascade(events) {
     highestCascade = Math.max(highestCascade, ev.cascadeLevel);
     const longestMatch = ev.matches.reduce((m, x) => Math.max(m, x.length), 3);
     sfxMatch(ev.cascadeLevel, longestMatch);
-    if (ev.specialSpawns.length > 0) sfxSpecial();
+    if (ev.specialSpawns.length > 0) {
+      sfxSpecial();
+      // Show the powerup tutorial toast once per device, the first time
+      // any powerup spawns. Avoids confusion about "what's that red square."
+      if (!load('seenPowerupTutorial', false)) {
+        save('seenPowerupTutorial', true);
+        showToast(
+          'You made a <strong>powerup!</strong><br>' +
+          'Match three drinks including the glowing one to fire it. ' +
+          'Arrows clear a row or column, the burst clears a 3x3 area, ' +
+          'and the star clears every drink of one type.'
+        );
+      }
+    }
     await animateCascade(els.board(), els.boardFrame(), ev);
   }
 
