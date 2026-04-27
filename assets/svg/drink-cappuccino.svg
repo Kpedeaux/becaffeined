@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="CR Cappuccino">
+  <!-- Shadow -->
+  <ellipse cx="100" cy="180" rx="50" ry="6" fill="rgba(23,23,23,0.18)"/>
+
+  <!-- Mug body -->
+  <path d="M 58 64 Q 58 58 64 58 L 136 58 Q 142 58 142 64 L 142 168 Q 142 176 134 176 L 66 176 Q 58 176 58 168 Z"
+        fill="#fbfbfb" stroke="#1d1d1d" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- Mug handle -->
+  <path d="M 142 86 Q 172 86 172 116 Q 172 146 142 146"
+        fill="none" stroke="#1d1d1d" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 142 96 Q 162 96 162 116 Q 162 136 142 136"
+        fill="#fbfbfb" stroke="#1d1d1d" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Red rim (top edge) -->
+  <ellipse cx="100" cy="62" rx="42" ry="8" fill="#A52639" stroke="#1d1d1d" stroke-width="4"/>
+
+  <!-- Foam (cream surface) -->
+  <ellipse cx="100" cy="62" rx="36" ry="6" fill="#e6c9a5"/>
+  <ellipse cx="100" cy="60" rx="34" ry="5" fill="#f1dcc0"/>
+
+  <!-- Foam art (rosetta) — simplified leaf pattern -->
+  <g fill="#b8854f" opacity="0.85">
+    <ellipse cx="100" cy="60" rx="14" ry="3"/>
+    <ellipse cx="100" cy="60" rx="10" ry="2.2" fill="#8b5a30"/>
+    <path d="M 88 60 Q 100 56 112 60" stroke="#8b5a30" stroke-width="1.2" fill="none"/>
+  </g>
+  <!-- Cocoa dust -->
+  <circle cx="92" cy="59" r="0.8" fill="#3a1d0e"/>
+  <circle cx="108" cy="58" r="0.9" fill="#3a1d0e"/>
+  <circle cx="103" cy="61" r="0.6" fill="#3a1d0e"/>
+  <circle cx="96" cy="61" r="0.6" fill="#3a1d0e"/>
+
+  <!-- CR logo on mug -->
+  <text x="100" y="128" text-anchor="middle"
+        font-family="Georgia, serif" font-size="34" font-weight="700"
+        fill="#1d1d1d" letter-spacing="3">CR</text>
+  <text x="100" y="148" text-anchor="middle"
+        font-family="Georgia, serif" font-size="11" font-weight="400"
+        fill="#1d1d1d" letter-spacing="3">COFFEE</text>
+
+  <!-- Subtle shadow on mug side -->
+  <path d="M 138 70 L 138 168 Q 138 172 134 172"
+        stroke="rgba(23,23,23,0.12)" stroke-width="6" fill="none" stroke-linecap="round"/>
+</svg>

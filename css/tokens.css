@@ -1,0 +1,160 @@
+/* ==========================================================================
+   Becaffeined — Brand Tokens
+   Pulled from the CR Coffee Design System (colors_and_type.css), trimmed to
+   what the game needs and supplemented with game-specific tokens.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Cafe Brewery';
+  src: url('../assets/fonts/cafe-brewery.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cafe Brewery';
+  src: url('../assets/fonts/cafe-brewery-bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ----- CR brand palette ----- */
+  --cr-red:           #A52639;   /* Million Dollar Red — front door & accent */
+  --cr-red-hover:     #8A1E2F;
+  --cr-red-soft:      #C9485B;   /* lighter, for game glow effects */
+  --cr-cream:         #FAF8F5;
+  --cr-cream-dark:    #F0EDE8;
+  --cr-parchment:     #EFE7D8;
+  --cr-charcoal:      #2A2A2A;
+  --cr-charcoal-2:    #555555;
+  --cr-ink:           #171717;
+  --cr-hairline:      rgba(42, 42, 42, 0.12);
+  --cr-hairline-2:    rgba(42, 42, 42, 0.25);
+
+  /* ----- Game-specific accents -----
+     One color per drink piece, used for glow/match-burst effects.
+     Each is pulled from the dominant color of its illustration. */
+  --piece-iced-cr:        #C68B4B;   /* warm caramel swirl */
+  --piece-streetcar:      #7E1E2A;   /* deep oxblood from glass + lid */
+  --piece-cappuccino:     #E6C9A5;   /* foam cream */
+  --piece-bayou-beast:    #4FB36A;   /* signature green */
+  --piece-iced-mocha:     #5C3A2E;   /* mocha brown */
+  --piece-coffee-bag:     #C9A578;   /* kraft tan */
+
+  /* ----- Type families ----- */
+  --font-display: 'Cafe Brewery', 'Playfair Display', Georgia, serif;
+  --font-serif:   'Playfair Display', 'Hoefler Text', Georgia, serif;
+  --font-sans:    'Inter', -apple-system, 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  /* ----- Type scale ----- */
+  --text-xs:   clamp(0.6875rem, 0.6rem + 0.2vw, 0.75rem);
+  --text-sm:   clamp(0.75rem,   0.7rem + 0.25vw, 0.875rem);
+  --text-base: clamp(0.9375rem, 0.875rem + 0.25vw, 1.0625rem);
+  --text-lg:   clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-xl:   clamp(1.25rem,   1.1rem + 0.5vw, 1.5rem);
+  --text-2xl:  clamp(1.5rem,    1.2rem + 1vw, 2rem);
+  --text-3xl:  clamp(2rem,      1.5rem + 1.5vw, 2.75rem);
+  --text-4xl:  clamp(2.5rem,    1.8rem + 2.5vw, 3.75rem);
+  --text-5xl:  clamp(3rem,      2rem + 3.5vw, 5rem);
+
+  /* ----- Spacing ----- */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+
+  /* ----- Game tokens ----- */
+  --board-cols: 8;
+  --board-rows: 8;
+  --cell-size: clamp(36px, 11vw, 64px);
+  --cell-gap: 4px;
+  --board-padding: 8px;
+
+  /* Animation durations */
+  --t-swap: 220ms;
+  --t-fall: 360ms;
+  --t-pop: 260ms;
+  --t-cascade-step: 80ms;
+
+  /* Easing */
+  --ease-snap: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Effects */
+  --shadow-piece: 0 2px 4px rgba(23, 23, 23, 0.08);
+  --shadow-board: 0 14px 40px -18px rgba(23, 23, 23, 0.3);
+}
+
+/* Respect user preference */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-swap: 1ms;
+    --t-fall: 1ms;
+    --t-pop: 1ms;
+    --t-cascade-step: 1ms;
+  }
+}
+
+/* ----- Base / reset ----- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--cr-cream);
+  color: var(--cr-charcoal);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+a { color: var(--cr-red); }
+a:hover { color: var(--cr-red-hover); }
+
+::selection { background: var(--cr-red); color: var(--cr-cream); }
+
+/* ----- Type utilities (mirror the design system) ----- */
+.type-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.type-headline {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--cr-ink);
+  text-wrap: balance;
+}
+.type-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cr-charcoal-2);
+}
+.type-pull {
+  font-family: var(--font-serif);
+  font-style: italic;
+}

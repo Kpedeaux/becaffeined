@@ -1,0 +1,14 @@
+{
+  "name": "becaffeined",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A match-3 game for CR Coffee Shop.",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 8080",
+    "test": "node tests/board.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

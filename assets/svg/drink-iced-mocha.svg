@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Iced Mocha with CR sleeve">
+  <defs>
+    <linearGradient id="im-mocha" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8a5a3c"/>
+      <stop offset="60%" stop-color="#5c3a2e"/>
+      <stop offset="100%" stop-color="#3a2218"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shadow -->
+  <ellipse cx="100" cy="184" rx="46" ry="6" fill="rgba(23,23,23,0.18)"/>
+
+  <!-- Cup body (plastic, slight taper, transparent dome above) -->
+  <path d="M 62 76 L 66 178 Q 66 182 70 182 L 130 182 Q 134 182 134 178 L 138 76 Z"
+        fill="#efe9de" stroke="#1d1d1d" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- Mocha fill -->
+  <path d="M 64 80 L 68 174 Q 68 176 70 176 L 130 176 Q 132 176 132 174 L 136 80 Z"
+        fill="url(#im-mocha)"/>
+
+  <!-- CR sleeve (black band around middle) -->
+  <path d="M 64 110 L 66 158 Q 66 160 68 160 L 132 160 Q 134 160 134 158 L 136 110 Z"
+        fill="#171717" stroke="#1d1d1d" stroke-width="2"/>
+
+  <!-- White CR mark on sleeve -->
+  <text x="100" y="138" text-anchor="middle"
+        font-family="Georgia, serif" font-size="22" font-weight="700"
+        fill="#fafafa" letter-spacing="3">CR</text>
+  <text x="100" y="152" text-anchor="middle"
+        font-family="Georgia, serif" font-size="7" font-weight="400"
+        fill="#fafafa" letter-spacing="2">COFFEE SHOP</text>
+  <!-- Sleeve hairline -->
+  <rect x="68" y="114" width="64" height="42" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+
+  <!-- Dome lid -->
+  <path d="M 60 76 Q 60 60 80 56 Q 100 50 120 56 Q 140 60 140 76 Z"
+        fill="rgba(220,215,205,0.55)" stroke="#1d1d1d" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Lid highlight -->
+  <path d="M 78 60 Q 100 54 122 60" stroke="rgba(255,255,255,0.55)" stroke-width="3"
+        fill="none" stroke-linecap="round"/>
+
+  <!-- Black straws -->
+  <rect x="92" y="22" width="5" height="44" rx="2" fill="#171717"/>
+  <rect x="103" y="20" width="5" height="46" rx="2" fill="#171717"/>
+
+  <!-- Whipped cream peek (small) -->
+  <path d="M 80 76 Q 88 68 96 74 Q 104 66 112 74 Q 120 68 120 76 Z"
+        fill="#f5efe2" stroke="#1d1d1d" stroke-width="2" stroke-linejoin="round"/>
+</svg>

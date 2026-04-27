@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="CR Coffee Shop retail bag">
+  <defs>
+    <linearGradient id="bag-kraft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4b78a"/>
+      <stop offset="50%" stop-color="#c9a578"/>
+      <stop offset="100%" stop-color="#a98556"/>
+    </linearGradient>
+    <linearGradient id="bag-shade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="rgba(0,0,0,0.0)"/>
+      <stop offset="50%" stop-color="rgba(0,0,0,0.0)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.18)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shadow -->
+  <ellipse cx="100" cy="184" rx="44" ry="6" fill="rgba(23,23,23,0.18)"/>
+
+  <!-- Bag body — standup pouch shape -->
+  <path d="M 58 50
+           Q 56 46 60 44 L 140 44 Q 144 46 142 50
+           L 144 174 Q 144 180 138 180 L 62 180 Q 56 180 56 174 Z"
+        fill="url(#bag-kraft)" stroke="#1d1d1d" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- Top fold seam -->
+  <path d="M 60 50 L 140 50" stroke="#8a6a3a" stroke-width="2" stroke-dasharray="3 3" fill="none"/>
+
+  <!-- Hang-tag hole at top -->
+  <ellipse cx="100" cy="46" rx="6" ry="3" fill="#1d1d1d" opacity="0.6"/>
+
+  <!-- Wrinkles for character -->
+  <path d="M 70 70 Q 90 75 70 90" stroke="#a98556" stroke-width="2" fill="none" opacity="0.6"/>
+  <path d="M 130 100 Q 110 108 132 122" stroke="#a98556" stroke-width="2" fill="none" opacity="0.6"/>
+  <path d="M 64 140 Q 80 145 65 158" stroke="#a98556" stroke-width="2" fill="none" opacity="0.5"/>
+
+  <!-- CR mark area -->
+  <text x="100" y="100" text-anchor="middle"
+        font-family="Georgia, serif" font-size="38" font-weight="700"
+        fill="#1d1d1d" letter-spacing="3">CR</text>
+  <text x="100" y="124" text-anchor="middle"
+        font-family="Georgia, serif" font-size="11" font-weight="400"
+        fill="#1d1d1d" letter-spacing="3">COFFEE SHOP</text>
+
+  <!-- Hairline divider -->
+  <line x1="72" y1="136" x2="128" y2="136" stroke="#1d1d1d" stroke-width="1" opacity="0.5"/>
+
+  <!-- "Cold Brew Blend" label box -->
+  <rect x="74" y="142" width="52" height="22" rx="1" fill="#fbfbfb" stroke="#1d1d1d" stroke-width="1.2"/>
+  <text x="100" y="156" text-anchor="middle"
+        font-family="'Helvetica Neue', sans-serif" font-size="8" font-weight="600"
+        fill="#1d1d1d">COLD BREW BLEND</text>
+
+  <!-- Side shading -->
+  <rect x="58" y="50" width="86" height="130" fill="url(#bag-shade)"/>
+</svg>
