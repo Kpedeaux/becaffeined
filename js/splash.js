@@ -61,9 +61,9 @@ export function showTitle({ highScore }) {
 
     const body = document.createElement('p');
     body.className = 'overlay__body';
-    body.textContent = 'Match three drinks to clear them. Bigger matches make ' +
-      'special pieces. Make it through eight levels and learn a little about ' +
-      'CR Coffee Shop between each one.';
+    body.textContent = 'Match three drinks to clear them. Match four or more ' +
+      'to create a red powerup that clears a row, column, or area when matched ' +
+      'again. Eight levels. Learn a little about CR Coffee Shop between each.';
     inner.appendChild(body);
 
     const btnRow = document.createElement('div');
@@ -291,7 +291,7 @@ const TRIVIA = [
     options: [
       'Streetcar Blend',
       'Magazine Blend',
-      'St. Roch Blend',
+      'Roch Blend',
       'French Roast',
     ],
     correct: 2,

@@ -20,9 +20,8 @@ export const LEVELS = [
       subtitle: 'One Standard.',
       photo: 'assets/splash/magazine-dusk.jpg',
       body:
-        'CR Coffee Shop runs four locations across the city: Magazine Street ' +
-        'in Uptown, St. Roch Market on St. Claude, Old Metairie on Metairie ' +
-        'Road, and inside Louis Armstrong International Airport.',
+        'Magazine Street. Metairie Road. St. Roch Market. ' +
+        'Inside Louis Armstrong International Airport.',
       pull: null,
     },
   },
@@ -48,12 +47,12 @@ export const LEVELS = [
     target: 1600,
     seconds: 80,
     splash: {
-      eyebrow: 'The St. Roch Blend',
+      eyebrow: 'The Roch Blend',
       title: 'Coffee and Chicory.',
       subtitle: 'The New Orleans tradition.',
       photo: 'assets/splash/cold-brew.jpg',
       body:
-        'Our St. Roch Blend pays tribute to a century-old New Orleans ' +
+        'Our Roch Blend pays tribute to a century-old New Orleans ' +
         'coffee tradition: coffee blended with chicory root for a smoother, ' +
         'richer cup. Taste it at any of our four locations or order beans ' +
         'to ship home.',
@@ -104,7 +103,7 @@ export const LEVELS = [
       subtitle: null,
       photo: 'assets/splash/fresh-pour.jpg',
       body:
-        'Streetcar (medium). French Roast (dark). St. Roch Blend, our ' +
+        'Streetcar (medium). French Roast (dark). Roch Blend, our ' +
         'coffee and chicory blend for the New Orleans tradition. Plus ' +
         'Cold Brew Blend and CR Espresso. All ship nationwide.',
       pull: null,

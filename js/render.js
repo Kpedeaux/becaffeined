@@ -390,6 +390,10 @@ export function reconcile(boardEl, board) {
           el.style.setProperty('--x', px(xFor(c)));
           el.style.setProperty('--y', px(yFor(r)));
         }
+        // Defensive: strip stale interaction classes that should NEVER
+        // survive a cascade. is-selected / is-hint are turn-scoped UI
+        // state, not piece state.
+        el.classList.remove('is-selected', 'is-hint', 'is-clearing', 'is-spawning');
       }
       seenIds.add(id);
     }

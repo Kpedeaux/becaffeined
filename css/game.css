@@ -288,10 +288,13 @@
   filter: drop-shadow(0 2px 3px rgba(23, 23, 23, 0.12));
   transition: transform 0.18s var(--ease-snap);
 }
+/* Selection ring is intentionally CHARCOAL (not red) to avoid confusion
+   with the red-glowing powerup pieces. A selected piece grows slightly
+   and gets a soft dark halo. */
 .piece.is-selected .piece__art {
-  transform: scale(1.08);
-  filter: drop-shadow(0 0 0 var(--cr-red))
-          drop-shadow(0 4px 6px rgba(165, 38, 57, 0.4));
+  transform: scale(1.10);
+  filter: drop-shadow(0 0 0 var(--cr-charcoal))
+          drop-shadow(0 0 8px rgba(42, 42, 42, 0.55));
 }
 .piece.is-hint .piece__art {
   animation: hint-pulse 0.9s ease-in-out infinite;
@@ -315,6 +318,20 @@
 @keyframes piece-drop {
   0%   { opacity: 0; transform: translate(var(--x), calc(var(--y) - 60px)) scale(0.92); }
   100% { opacity: 1; transform: translate(var(--x), var(--y)) scale(1); }
+}
+
+/* Special piece overlays — applied in addition to the drink art.
+   These pieces are POWERUPS. The throbbing red ring tells the player
+   "this is special, match it again." */
+.piece.is-line-h .piece__art,
+.piece.is-line-v .piece__art,
+.piece.is-area .piece__art,
+.piece.is-color .piece__art {
+  animation: powerup-glow 1.6s ease-in-out infinite;
+}
+@keyframes powerup-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(165, 38, 57, 0.4)); }
+  50%      { filter: drop-shadow(0 0 14px rgba(165, 38, 57, 0.9)); }
 }
 
 /* Special piece overlays — applied in addition to the drink art */
@@ -352,8 +369,8 @@
   animation: special-throb 0.9s ease-in-out infinite;
 }
 @keyframes special-throb {
-  0%, 100% { opacity: 0.55; transform: scale(1); }
-  50%      { opacity: 1.0;  transform: scale(1.06); }
+  0%, 100% { opacity: 0.5; transform: scale(0.96); }
+  50%      { opacity: 1.0; transform: scale(1.10); }
 }
 
 /* Score popup floats up from the board */
