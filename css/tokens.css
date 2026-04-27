@@ -4,20 +4,10 @@
    what the game needs and supplemented with game-specific tokens.
    ========================================================================== */
 
-@font-face {
-  font-family: 'Cafe Brewery';
-  src: url('../assets/fonts/cafe-brewery.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Cafe Brewery';
-  src: url('../assets/fonts/cafe-brewery-bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+/* Cafe Brewery (the CR brand display face) is intentionally NOT loaded in the
+   game. The game uses Fredoka — a rounded casual-game face served from
+   Google Fonts, freely licensed for commercial use (SIL OFL). The wordmark
+   remains visually in the CR family via the monogram PNG in the header. */
 
 :root {
   /* ----- CR brand palette ----- */
@@ -43,8 +33,11 @@
   --piece-iced-mocha:     #5C3A2E;   /* mocha brown */
   --piece-coffee-bag:     #C9A578;   /* kraft tan */
 
-  /* ----- Type families ----- */
-  --font-display: 'Cafe Brewery', 'Playfair Display', Georgia, serif;
+  /* ----- Type families -----
+     Game-y display: Fredoka (rounded, friendly, reads big on small screens).
+     Body: Inter for legibility. Mono: JetBrains Mono for HUD labels.
+     Playfair Display kept around for editorial pull-quotes in splash cards. */
+  --font-display: 'Fredoka', 'Helvetica Neue', system-ui, sans-serif;
   --font-serif:   'Playfair Display', 'Hoefler Text', Georgia, serif;
   --font-sans:    'Inter', -apple-system, 'Helvetica Neue', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
@@ -71,7 +64,9 @@
   /* ----- Game tokens ----- */
   --board-cols: 8;
   --board-rows: 8;
-  --cell-size: clamp(36px, 11vw, 64px);
+  /* Bigger tiles: was clamp(36, 11vw, 64). On a 390px iPhone this moved from
+     ~43px to ~51px per tile — ~18% larger and much easier to read. */
+  --cell-size: clamp(40px, 10.4vw, 72px);
   --cell-gap: 4px;
   --board-padding: 8px;
 
@@ -118,7 +113,14 @@ html, body {
 body {
   min-height: 100vh;
   min-height: 100dvh;
+  /* Block iOS / Android edge-swipe back/forward navigation. The combination
+     of overscroll-behavior:none + overscroll-behavior-x:contain prevents
+     the browser from claiming the gesture before our handler does. */
   overscroll-behavior: none;
+  overscroll-behavior-x: contain;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 button {

@@ -25,8 +25,8 @@ import {
 import { attachInput } from './input.js';
 import {
   sfxSwap, sfxIllegal, sfxMatch, sfxBigCombo, sfxSpecial,
-  sfxLevelUp, sfxGameOver, sfxTick, unlockOnGesture,
-  isMuted, toggleMute,
+  sfxLevelUp, sfxGameOver, sfxTick,
+  unlockOnGesture, isMuted, toggleMute,
 } from './audio.js';
 import {
   showTitle, showSplash, showGameOver, showPause,
@@ -373,6 +373,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     const muted = toggleMute();
     updateMuteButton();
     trackMuteToggle(muted);
+    // Audible confirmation — single drip if we just unmuted
+    if (!muted) sfxSwap();
   });
   els.pauseBtn().addEventListener('click', () => {
     if (game.state === STATE.PLAYING) togglePause();
@@ -390,7 +392,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }, 150);
   });
 
-  updateMuteButton();
+   updateMuteButton();
   await showTitle({ highScore: getHighScore() });
   startGame();
 });
