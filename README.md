@@ -1,11 +1,47 @@
 # Becaffeined
 
-A match-3 game for [CR Coffee Shop](https://crcoffeenola.com/) — eight progressive
-levels, with a CR brand splash screen between each. Pure static site, no build
-step, no backend. Deploys to Cloudflare Pages.
+A match-3 game for [CR Coffee Shop](https://crcoffeenola.com/). Eight
+progressive levels plus two trivia-gated bonus rounds with double scoring,
+CR brand splash screens between levels, and a global leaderboard backed by
+Cloudflare Pages Functions + D1.
 
-> **Status:** v1.0 — local play + localStorage high score. Global leaderboard
-> deferred to v2 (Cloudflare Workers + D1).
+## One-time backend setup (D1 database)
+
+The leaderboard reads from and writes to a Cloudflare D1 SQLite database via
+the `/functions/api/scores.js` Pages Function. Until D1 is wired up, the
+endpoint returns 503 and the game falls back to a per-device cache.
+
+**1. Create the D1 database** (one-time, in Cloudflare dashboard or CLI):
+
+```bash
+npx wrangler d1 create becaffeined
+```
+
+Copy the `database_id` it prints — you'll need it.
+
+**2. Apply the schema** to the new database:
+
+```bash
+npx wrangler d1 execute becaffeined --remote --file=schema.sql
+```
+
+**3. Bind the database to the Pages project.** In Cloudflare dashboard:
+Workers & Pages → `becaffeined` → Settings → Functions → D1 database
+bindings → Add binding:
+
+- Variable name: `DB`
+- D1 database: `becaffeined`
+
+Save. Trigger a redeploy (push any commit, or click "Retry deployment" in
+the Pages UI) so the binding takes effect.
+
+**4. Verify.** Hit `https://game.crcoffeenola.com/api/scores` — you should
+see `{"scores":[]}` (200 OK). If you see 503 / "D1 not bound", the binding
+didn't take or the deploy hasn't refreshed. If you see 500, run the schema
+again.
+
+After step 4, the in-game leaderboard is live and global. Scores submitted
+from any phone show up on every other phone's title and game-over screens.
 
 ## Quick start (local)
 

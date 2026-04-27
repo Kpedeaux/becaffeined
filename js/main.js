@@ -36,7 +36,7 @@ import {
 } from './levels.js';
 import {
   getHighScore, setHighScore, load, save,
-  getTopScores, addTopScore, qualifiesForTopScore,
+  fetchTopScores, getCachedTopScores, submitTopScore, qualifiesForTopScore,
 } from './storage.js';
 import {
   trackGameStart, trackLevelStart, trackLevelComplete,
@@ -358,25 +358,33 @@ async function runBonusGate(bonusIndex) {
 
 
 /** Show the end-of-game flow: if the player's score qualifies for the
- *  top-3 leaderboard, prompt for their name first. Then show the final
- *  game-over screen with the updated leaderboard. */
+ *  global top board, prompt for their name and submit. Returns the
+ *  refreshed top scores so the game-over screen can show them. */
 async function endGameWithLeaderboard({ score, levelReached, won }) {
-  // High-score (personal best) check first
+  // Personal best (localStorage, always works)
   const isNewBest = setHighScore(score);
   const high = getHighScore();
   trackGameOver(score, levelReached, won);
   if (isNewBest) trackHighScore(high);
 
-  // Leaderboard check — if score qualifies, prompt for name
-  if (qualifiesForTopScore(score)) {
-    const top = getTopScores();
-    let rank = top.findIndex(e => score > e.score) + 1;
-    if (rank === 0) rank = top.length + 1;
+  // Global leaderboard — fetch live to decide qualification, then maybe
+  // prompt for name and submit
+  const liveTop = await fetchTopScores();
+  let topScores = liveTop;
+  const qualifies = await qualifiesForTopScore(score);
+  if (qualifies) {
+    let rank = liveTop.findIndex(e => score > e.score) + 1;
+    if (rank === 0) rank = liveTop.length + 1;
     const name = await showNameEntry({ score, rank });
-    addTopScore(name, score);
+    topScores = await submitTopScore({
+      name,
+      score,
+      levelReached,
+      bonusLevels: game.bonusLevelsReached,
+    });
   }
 
-  return { isNewBest, high, topScores: getTopScores() };
+  return { isNewBest, high, topScores };
 }
 
 async function onTimeOut() {
@@ -458,7 +466,11 @@ async function returnToTitle() {
   game.state = STATE.TITLE;
   game.totalScore = 0;
   els.board().innerHTML = '';
-  await showTitle({ highScore: getHighScore(), topScores: getTopScores() });
+  // Show title with whatever scores are in cache for an instant render,
+  // then kick off a background refresh that updates the cache for next time.
+  const cachedScores = getCachedTopScores();
+  fetchTopScores().catch(() => {}); // fire-and-forget, no UI dependency
+  await showTitle({ highScore: getHighScore(), topScores: cachedScores });
   startGame();
 }
 
@@ -510,6 +522,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
 
   updateMuteButton();
-  await showTitle({ highScore: getHighScore(), topScores: getTopScores() });
+  // Show title with whatever scores are in cache for an instant render,
+  // then kick off a background refresh that updates the cache for next time.
+  const cachedScores = getCachedTopScores();
+  fetchTopScores().catch(() => {}); // fire-and-forget, no UI dependency
+  await showTitle({ highScore: getHighScore(), topScores: cachedScores });
   startGame();
 });
