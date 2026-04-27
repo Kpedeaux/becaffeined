@@ -245,4 +245,55 @@ export async function animateCascades(boardEl, frameEl, events) {
   for (const ev of events) {
     await animateCascade(boardEl, frameEl, ev);
   }
+  // Safety net: after the cascade chain finishes, reconcile the DOM with the
+  // engine's authoritative board state. Catches any rare sync drift (e.g. a
+  // fallen piece whose CSS transition was interrupted by a viewport resize)
+  // and self-heals it before the player can see an empty cell.
+  if (events.length) {
+    reconcile(boardEl, events[events.length - 1].nextBoard);
+  }
+}
+
+/** Compare the DOM piece set to the engine's grid and patch any mismatches.
+ *  Fast O(rows*cols) walk — at 49 cells this is essentially free. */
+export function reconcile(boardEl, board) {
+  const { rows, cols, grid } = board;
+
+  // Index DOM pieces by their stable id
+  const byId = new Map();
+  const allEls = boardEl.querySelectorAll('.piece');
+  for (const el of allEls) {
+    if (el.classList.contains('is-clearing')) continue;
+    byId.set(el.dataset.id, el);
+  }
+
+  // Walk the engine's grid and ensure every cell is represented correctly
+  const seenIds = new Set();
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const piece = grid[r][c];
+      if (!piece) continue;
+      const id = String(piece.id);
+      let el = byId.get(id);
+      if (!el) {
+        // Engine has a piece here that the DOM doesn't — create it
+        el = makePieceEl(piece, r, c);
+        boardEl.appendChild(el);
+      } else {
+        // Element exists but may be at the wrong coords — snap into place
+        if (parseInt(el.dataset.r, 10) !== r || parseInt(el.dataset.c, 10) !== c) {
+          el.dataset.r = r;
+          el.dataset.c = c;
+          el.style.setProperty('--x', px(xFor(c)));
+          el.style.setProperty('--y', px(yFor(r)));
+        }
+      }
+      seenIds.add(id);
+    }
+  }
+
+  // Remove any orphan DOM pieces the engine no longer knows about
+  for (const [id, el] of byId.entries()) {
+    if (!seenIds.has(id)) el.remove();
+  }
 }

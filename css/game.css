@@ -159,6 +159,48 @@
 }
 .hud__value--time.warn { color: var(--cr-red); }
 
+/* CR-red CTA button below the board. Width tracks the board frame so it
+   reads as an extension of the game UI, not a stray ad banner. The split
+   "Visit / crcoffeenola.com" stack reads better on small phones than a
+   single line of small text. */
+.cta-shop {
+  width: 100%;
+  max-width: var(--board-frame-width);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 14px 24px;
+  background: var(--cr-red);
+  color: var(--cr-cream);
+  text-decoration: none;
+  border: 1px solid var(--cr-red);
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  text-align: center;
+  transition: background-color 0.2s ease, transform 0.12s ease;
+  box-shadow: 0 4px 14px -4px rgba(165, 38, 57, 0.45);
+}
+.cta-shop:hover, .cta-shop:focus-visible {
+  background: var(--cr-red-hover);
+  border-color: var(--cr-red-hover);
+  color: var(--cr-cream);
+}
+.cta-shop:active { transform: translateY(1px); }
+.cta-shop__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.85;
+}
+.cta-shop__url {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
 /* Target progress bar — same width track as HUD + board frame */
 .progress {
   width: 100%;
@@ -480,60 +522,4 @@
 .btn:hover, .btn:focus-visible {
   background: var(--cr-red-hover);
   border-color: var(--cr-red-hover);
-  color: var(--cr-cream);
-}
-.btn--ghost {
-  background: transparent;
-  color: var(--cr-charcoal);
-  border-color: var(--cr-hairline-2);
-}
-.btn--ghost:hover {
-  background: transparent;
-  color: var(--cr-red);
-  border-color: var(--cr-red);
-}
-.btn-row {
-  display: flex;
-  gap: var(--space-sm);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-/* ----- Title screen flourish ----- */
-.title-marks {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-md);
-}
-.title-marks__divider {
-  width: 1px;
-  height: 32px;
-  background: var(--cr-hairline-2);
-}
-.title-best {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cr-charcoal-2);
-  margin-top: var(--space-md);
-}
-.title-best strong {
-  color: var(--cr-ink);
-  font-weight: 700;
-  margin-left: 8px;
-  font-variant-numeric: tabular-nums;
-}
-
-[hidden] { display: none !important; }
-
-@media (min-width: 600px) {
-  .app-main { padding: var(--space-lg); }
-}
-@media (min-width: 900px) {
-  .overlay__inner { max-width: 640px; }
-}
-
-.piece__art img { image-rendering: -webkit-optimize-contrast; }
+  color: va

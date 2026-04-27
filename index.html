@@ -107,6 +107,12 @@
       <div class="board" id="board"></div>
     </div>
 
+    <a class="cta-shop" href="https://crcoffeenola.com/" target="_blank" rel="noopener"
+       data-track="cta_below_board">
+      <span class="cta-shop__label">Visit</span>
+      <span class="cta-shop__url">crcoffeenola.com</span>
+    </a>
+
   </main>
 
   <footer class="app-footer" role="contentinfo">
@@ -125,14 +131,4 @@
   </p>
 </noscript>
 
-<!-- Service worker registration is intentionally disabled during rapid
-     iteration. /sw.js still exists as a kill-switch that the user's
-     EXISTING service worker (from earlier deploys) will auto-update to,
-     uninstalling itself in the process. New visitors don't register a
-     SW at all. We'll bring back a proper offline-first SW once the game
-     stabilizes — see task #17. -->
-
-<!-- Game entry — ES modules. -->
-<script type="module" src="js/main.js"></script>
-</body>
-</html>
+<!-- Service worker registration is intentionally
