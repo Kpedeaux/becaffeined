@@ -82,6 +82,15 @@
     64px
   );
 
+  /* Computed once: the actual outer width of the board frame. Used to lock
+     the HUD and progress bar to exactly the board's width so they always
+     line up edge-to-edge across all viewports. */
+  --board-frame-width: calc(
+    var(--cell-size) * 7
+    + var(--cell-gap) * 6
+    + var(--board-padding) * 2
+  );
+
   /* Animation durations */
   --t-swap: 220ms;
   --t-fall: 360ms;

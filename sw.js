@@ -6,7 +6,7 @@
  * (or wire it to a build-time constant if/when we add a build step).
  * ========================================================================== */
 
-const CACHE_VERSION = 'becaffeined-v3';
+const CACHE_VERSION = 'becaffeined-v4';
 const CORE_ASSETS = [
   '/',
   '/index.html',

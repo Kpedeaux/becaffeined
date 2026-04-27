@@ -125,10 +125,12 @@
 .app-footer a:hover { color: var(--cr-red); }
 .app-footer a::after { content: ' →'; color: var(--cr-red); }
 
-/* ----- HUD bar above the board ----- */
+/* ----- HUD bar above the board -----
+   Width tracks the board frame exactly so HUD, progress bar, and board
+   are always perfectly aligned edge-to-edge — no matter the screen size. */
 .hud {
   width: 100%;
-  max-width: 520px;
+  max-width: var(--board-frame-width);
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: var(--space-sm);
@@ -157,10 +159,10 @@
 }
 .hud__value--time.warn { color: var(--cr-red); }
 
-/* Target progress bar */
+/* Target progress bar — same width track as HUD + board frame */
 .progress {
   width: 100%;
-  max-width: 520px;
+  max-width: var(--board-frame-width);
   height: 6px;
   background: var(--cr-cream-dark);
   border: 1px solid var(--cr-hairline);
@@ -191,9 +193,15 @@
   touch-action: none;
   -webkit-touch-callout: none;
   overscroll-behavior: contain;
-  /* Defensive: even if the calc above mis-rounds by a fraction of a pixel
-     on some browser, this stops the frame from ever exceeding viewport. */
+  /* Lock to the same computed width the HUD uses, with a hard 100% cap so
+     no rounding error can let the frame exceed the available viewport. */
+  width: var(--board-frame-width);
   max-width: 100%;
+  /* Clip any artwork that bleeds past the cell grid (the 113% drink scale
+     can poke a few pixels past the edge tiles otherwise). The spawn-from-
+     above animation still works because the piece's translateY starts
+     negative — it just enters from off-frame, like a ball dropping in. */
+  overflow: hidden;
 }
 .board {
   position: relative;
