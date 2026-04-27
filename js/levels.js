@@ -136,7 +136,7 @@ export const LEVELS = [
       eyebrow: 'Final Round',
       title: 'Your Next Cup',
       subtitle: 'is waiting.',
-      photo: 'assets/splash/cold-brew.jpg',
+      photo: 'assets/splash/patio.jpg',
       body:
         'You made it. Eight levels, eight reasons we do what we do. Visit ' +
         'us on Magazine Street, at St. Roch Market, on Metairie Road, ' +
