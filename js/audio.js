@@ -253,10 +253,10 @@ export function sfxMatch(cascadeLevel = 1, matchLength = 3) {
   if (matchLength >= 4) {
     setTimeout(() => grindRip(pitch * 1.18, dur * 0.85), 75);
   }
-  // Cascade chain reward — bell ding from level 2 onward
-  if (cascadeLevel >= 2) {
-    setTimeout(() => bellDing(0.85 + cascadeLevel * 0.06), 110);
-  }
+  // Note: no bell ding on regular match cascades. The bell felt sad
+  // and out of place on a 2-cascade chain. Pitch climb on the grind +
+  // snap already conveys the chain reward. Bells are reserved for big
+  // combos (sfxBigCombo, fires at cascade 4+) and level-ups.
 }
 
 function bellDing(scale = 1.0) {
