@@ -1,72 +1,46 @@
 /* ==========================================================================
- * sw.js — Service worker
+ * sw.js — Kill-switch service worker
  *
- * Strategy: cache-first for static assets so the game works offline after a
- * single load. Bump CACHE_VERSION on every deploy that changes asset hashes
- * (or wire it to a build-time constant if/when we add a build step).
+ * Why this exists:
+ *   Earlier deploys registered a cache-first service worker (v1–v4). On
+ *   mobile Chrome (especially Samsung's variant) those cached versions
+ *   don't release cleanly via Site settings → Clear & reset, leaving
+ *   players seeing a stale version of the game.
+ *
+ *   This file replaces those previous service workers. On install it
+ *   wipes every cache, takes immediate control of all open tabs, and
+ *   unregisters itself. Next page load goes straight to the network
+ *   with normal HTTP caching governed by /_headers.
+ *
+ *   When the game stabilizes (no more visual or gameplay iteration),
+ *   we'll restore a proper service worker for offline play and PWA
+ *   installs.
  * ========================================================================== */
 
-const CACHE_VERSION = 'becaffeined-v4';
-const CORE_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/tokens.css',
-  '/css/game.css',
-  '/js/main.js',
-  '/js/board.js',
-  '/js/render.js',
-  '/js/input.js',
-  '/js/audio.js',
-  '/js/levels.js',
-  '/js/splash.js',
-  '/js/storage.js',
-  '/manifest.webmanifest',
-  '/assets/img/cr-monogram-dark.jpg',
-  '/assets/img/cr-logo.png',
-  '/assets/img/favicon-32x32.png',
-  '/assets/img/favicon-192x192.png',
-  '/assets/img/apple-touch-icon.png',
-  '/assets/svg/drink-iced-cr.svg',
-  '/assets/svg/drink-streetcar.svg',
-  '/assets/svg/drink-cappuccino.svg',
-  '/assets/svg/drink-bayou-beast.svg',
-  '/assets/svg/drink-iced-mocha.svg',
-  '/assets/svg/drink-coffee-bag.svg',
-];
-
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(CORE_ASSETS))
-  );
   self.skipWaiting();
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+  );
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    // Wipe every cache one more time, in case anything was created post-install
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+    // Take control of any tab that's currently open
+    await self.clients.claim();
+    // Unregister this worker so future visits hit the network directly
+    await self.registration.unregister();
+    // Force every controlled tab to reload — the user sees fresh content
+    // immediately without having to refresh manually.
+    const allClients = await self.clients.matchAll({ type: 'window' });
+    for (const client of allClients) {
+      try { client.navigate(client.url); } catch { /* navigation may not be permitted */ }
+    }
+  })());
 });
 
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  // Don't cache analytics or any cross-origin POSTs.
-  if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return;
-
-  event.respondWith(
-    caches.match(req).then((cached) =>
-      cached ||
-      fetch(req).then((res) => {
-        if (res && res.status === 200 && res.type === 'basic') {
-          const clone = res.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put(req, clone));
-        }
-        return res;
-      }).catch(() => caches.match('/index.html'))
-    )
-  );
-});
+// No fetch handler — when this SW is active it acts as a pass-through. Once
+// it unregisters in activate(), all subsequent loads go straight to network.

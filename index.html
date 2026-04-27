@@ -125,9 +125,14 @@
   </p>
 </noscript>
 
-<!-- Service worker (PWA install + offline) -->
+<!-- Service worker is intentionally disabled during rapid iteration. The
+     sw.js file at the root is a kill-switch that auto-uninstalls any prior
+     version that may be cached on a returning visitor's phone. We'll bring
+     a proper offline-first SW back when the game stops changing daily. -->
 <script>
   if ('serviceWorker' in navigator) {
+    // Register the kill-switch once so any old SW gets evicted, then it
+    // unregisters itself in its own activate handler.
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     });
