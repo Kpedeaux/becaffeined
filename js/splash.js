@@ -29,7 +29,7 @@ function makeButton(label, onClick, { variant = 'primary' } = {}) {
 }
 
 /** Title screen. Resolves when the player presses Play. */
-export function showTitle({ highScore }) {
+export function showTitle({ highScore, topScores = [] }) {
   return new Promise(resolve => {
     clear();
     const root = overlayEl();
@@ -78,6 +78,10 @@ export function showTitle({ highScore }) {
       best.className = 'title-best';
       best.innerHTML = `Personal Best <strong>${highScore.toLocaleString()}</strong>`;
       inner.appendChild(best);
+    }
+
+    if (topScores && topScores.length > 0) {
+      inner.appendChild(makeTopScoresList(topScores));
     }
 
     root.appendChild(inner);
@@ -157,7 +161,7 @@ export function showSplash(splash, levelNumber, totalLevels) {
 }
 
 /** Game over overlay. Resolves with 'replay' when player chooses to play again. */
-export function showGameOver({ score, highScore, isNewBest, levelReached, totalLevels, won, bonusLevelsReached = 0 }) {
+export function showGameOver({ score, highScore, isNewBest, levelReached, totalLevels, won, bonusLevelsReached = 0, topScores = [] }) {
   return new Promise(resolve => {
     clear();
     const root = overlayEl();
@@ -214,6 +218,10 @@ export function showGameOver({ score, highScore, isNewBest, levelReached, totalL
       pull.className = 'overlay__pull';
       pull.textContent = '"New personal best."';
       inner.appendChild(pull);
+    }
+
+    if (topScores && topScores.length > 0) {
+      inner.appendChild(makeTopScoresList(topScores));
     }
 
     const btnRow = document.createElement('div');
@@ -391,5 +399,101 @@ export function showBonusQuestion({
     inner.appendChild(choices);
 
     root.appendChild(inner);
+  });
+}
+
+/** Renders the top 3 leaderboard as a list. Returns the element to
+ *  append. Caller decides where it goes in the layout. */
+function makeTopScoresList(topScores) {
+  const wrap = document.createElement('div');
+  wrap.className = 'top-scores';
+  const heading = document.createElement('p');
+  heading.className = 'overlay__eyebrow top-scores__heading';
+  heading.textContent = 'Top 3';
+  wrap.appendChild(heading);
+  const list = document.createElement('ol');
+  list.className = 'top-scores__list';
+  topScores.forEach((entry, i) => {
+    const li = document.createElement('li');
+    li.className = 'top-scores__item';
+    const rank = document.createElement('span');
+    rank.className = 'top-scores__rank';
+    rank.textContent = `${i + 1}.`;
+    const name = document.createElement('span');
+    name.className = 'top-scores__name';
+    name.textContent = entry.name;
+    const score = document.createElement('span');
+    score.className = 'top-scores__score';
+    score.textContent = entry.score.toLocaleString();
+    li.appendChild(rank);
+    li.appendChild(name);
+    li.appendChild(score);
+    list.appendChild(li);
+  });
+  wrap.appendChild(list);
+  return wrap;
+}
+
+/** Name-entry overlay shown when a player makes the top 3.
+ *  Resolves with the entered name (max 12 chars, uppercased, defaults
+ *  to "Player" if blank). */
+export function showNameEntry({ score, rank }) {
+  return new Promise(resolve => {
+    clear();
+    const root = overlayEl();
+    const inner = document.createElement('div');
+    inner.className = 'overlay__inner';
+
+    const eyebrow = document.createElement('p');
+    eyebrow.className = 'overlay__eyebrow';
+    eyebrow.textContent = 'New Top Score';
+    inner.appendChild(eyebrow);
+
+    const title = document.createElement('h2');
+    title.className = 'overlay__title';
+    title.textContent = rank === 1 ? 'Number One!' : `Top ${rank}!`;
+    inner.appendChild(title);
+
+    const sub = document.createElement('p');
+    sub.className = 'overlay__subtitle';
+    sub.textContent = `${score.toLocaleString()} points. Enter a name for the leaderboard.`;
+    inner.appendChild(sub);
+
+    const form = document.createElement('form');
+    form.className = 'name-entry';
+    const input = document.createElement('input');
+    input.className = 'name-entry__input';
+    input.type = 'text';
+    input.maxLength = 12;
+    input.placeholder = 'YOUR NAME';
+    input.autocapitalize = 'characters';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    input.setAttribute('aria-label', 'Your name for the leaderboard');
+    form.appendChild(input);
+    inner.appendChild(form);
+
+    const btnRow = document.createElement('div');
+    btnRow.className = 'btn-row';
+    const submit = document.createElement('button');
+    submit.className = 'btn';
+    submit.type = 'button';
+    submit.textContent = 'Save';
+    btnRow.appendChild(submit);
+    inner.appendChild(btnRow);
+
+    const finalize = () => {
+      const name = input.value.trim() || 'Player';
+      hide();
+      resolve(name);
+    };
+    submit.addEventListener('click', finalize, { once: true });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      finalize();
+    });
+
+    root.appendChild(inner);
+    setTimeout(() => input.focus(), 50);
   });
 }

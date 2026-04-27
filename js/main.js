@@ -29,13 +29,14 @@ import {
   unlockOnGesture, isMuted, toggleMute,
 } from './audio.js';
 import {
-  showTitle, showSplash, showGameOver, showPause, showBonusQuestion,
+  showTitle, showSplash, showGameOver, showPause, showBonusQuestion, showNameEntry,
 } from './splash.js';
 import {
   LEVELS, TIME_BONUS_PER_PIECE, TIME_WARN_THRESHOLD, HINT_DELAY_MS,
 } from './levels.js';
 import {
   getHighScore, setHighScore, load, save,
+  getTopScores, addTopScore, qualifiesForTopScore,
 } from './storage.js';
 import {
   trackGameStart, trackLevelStart, trackLevelComplete,
@@ -355,22 +356,47 @@ async function runBonusGate(bonusIndex) {
   }
 }
 
+
+/** Show the end-of-game flow: if the player's score qualifies for the
+ *  top-3 leaderboard, prompt for their name first. Then show the final
+ *  game-over screen with the updated leaderboard. */
+async function endGameWithLeaderboard({ score, levelReached, won }) {
+  // High-score (personal best) check first
+  const isNewBest = setHighScore(score);
+  const high = getHighScore();
+  trackGameOver(score, levelReached, won);
+  if (isNewBest) trackHighScore(high);
+
+  // Leaderboard check — if score qualifies, prompt for name
+  if (qualifiesForTopScore(score)) {
+    const top = getTopScores();
+    let rank = top.findIndex(e => score > e.score) + 1;
+    if (rank === 0) rank = top.length + 1;
+    const name = await showNameEntry({ score, rank });
+    addTopScore(name, score);
+  }
+
+  return { isNewBest, high, topScores: getTopScores() };
+}
+
 async function onTimeOut() {
   if (game.state !== STATE.PLAYING) return;
   game.state = STATE.GAME_OVER;
   sfxGameOver();
   const totalScore = game.totalScore;
-  const isNewBest = setHighScore(totalScore);
-  const high = getHighScore();
-  trackGameOver(totalScore, LEVELS[game.level].id, false);
-  if (isNewBest) trackHighScore(high);
+  const { isNewBest, high, topScores } = await endGameWithLeaderboard({
+    score: totalScore,
+    levelReached: LEVELS[game.level].id,
+    won: false,
+  });
   const choice = await showGameOver({
     score: totalScore,
     highScore: high,
     isNewBest,
     levelReached: LEVELS[game.level].id,
-    totalLevels: LEVELS.length,
+    totalLevels: 10,
     won: false,
+    topScores,
   });
   if (choice === 'replay') startGame();
   else returnToTitle();
@@ -381,13 +407,12 @@ async function onWin() {
   // Time-remaining bonus from the last completed level
   game.totalScore += Math.round(game.timeLeft) * 10;
 
-  const isNewBest = setHighScore(game.totalScore);
-  const high = getHighScore();
-  // The "won" flag now means "cleared at least all 8 base levels."
-  // levelReached tracks the highest level the player actually cleared.
   const lastClearedId = LEVELS[game.level] ? LEVELS[game.level].id : 8;
-  trackGameOver(game.totalScore, lastClearedId, true);
-  if (isNewBest) trackHighScore(high);
+  const { isNewBest, high, topScores } = await endGameWithLeaderboard({
+    score: game.totalScore,
+    levelReached: lastClearedId,
+    won: true,
+  });
   const choice = await showGameOver({
     score: game.totalScore,
     highScore: high,
@@ -396,6 +421,7 @@ async function onWin() {
     totalLevels: 10,
     won: true,
     bonusLevelsReached: game.bonusLevelsReached,
+    topScores,
   });
   if (choice === 'replay') startGame();
   else returnToTitle();
@@ -432,7 +458,7 @@ async function returnToTitle() {
   game.state = STATE.TITLE;
   game.totalScore = 0;
   els.board().innerHTML = '';
-  await showTitle({ highScore: getHighScore() });
+  await showTitle({ highScore: getHighScore(), topScores: getTopScores() });
   startGame();
 }
 
@@ -484,6 +510,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
 
   updateMuteButton();
-  await showTitle({ highScore: getHighScore() });
+  await showTitle({ highScore: getHighScore(), topScores: getTopScores() });
   startGame();
 });

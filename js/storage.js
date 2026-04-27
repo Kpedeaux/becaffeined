@@ -53,3 +53,36 @@ export function setSettings(patch) {
   save(SETTINGS_KEY, next);
   return next;
 }
+/* ----- Top 3 leaderboard ----- */
+export const TOP_SCORES_KEY = 'topScores';
+const MAX_TOP_SCORES = 3;
+
+export function getTopScores() {
+  return load(TOP_SCORES_KEY, []) || [];
+}
+
+/** Returns true if a new score would land on the top-3 board.
+ *  A score qualifies if there are fewer than 3 entries OR it beats
+ *  the lowest current entry. Scores of 0 never qualify. */
+export function qualifiesForTopScore(score) {
+  if (!score || score <= 0) return false;
+  const top = getTopScores();
+  if (top.length < MAX_TOP_SCORES) return true;
+  const lowest = top[top.length - 1].score;
+  return score > lowest;
+}
+
+/** Add a new entry to the top-3 board. Sorted desc, capped at 3. */
+export function addTopScore(name, score) {
+  const safeName = (name || 'Player').toString().trim().slice(0, 12) || 'Player';
+  const top = getTopScores();
+  top.push({
+    name: safeName,
+    score: score,
+    date: new Date().toISOString().slice(0, 10),
+  });
+  top.sort((a, b) => b.score - a.score);
+  const trimmed = top.slice(0, MAX_TOP_SCORES);
+  save(TOP_SCORES_KEY, trimmed);
+  return trimmed;
+}
